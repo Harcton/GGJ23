@@ -126,7 +126,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="DemoContext.cpp" />
+    <ClCompile Include="DemoContextState.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -137,6 +137,7 @@
   <ItemGroup>
     <ClInclude Include="DefaultResourcePathFinders.h" />
     <ClInclude Include="DemoContext.h" />
+    <ClInclude Include="DemoContextState.h" />
     <ClInclude Include="PrecompiledInclude.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>

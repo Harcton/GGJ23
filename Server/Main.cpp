@@ -6,9 +6,10 @@
 #include "SpehsEngine/Net/NetLib.h"
 #include "SpehsEngine/Input/InputLib.h"
 #include "SpehsEngine/Physics/PhysicsLib.h"
+#include "SpehsEngine/Graphics/Window.h"
 #include "SpehsEngine/GUI/GUILib.h"
 #include "SpehsEngine/Debug/DebugLib.h"
-#include "Base/DemoContext.h"
+#include "Base/DemoContextState.h"
 
 
 int main()
@@ -22,14 +23,13 @@ int main()
 	se::GUILib gui;
 	se::debug::DebugLib debug(gui);
 
-	DemoContext demoContext("Server");
+	DemoContextState demoContextState("Server");
+	DemoContext demoContext = demoContextState.getDemoContext();
+	(void)demoContext;
 
-	demoContext.mainWindow.setBorderless(false);
-	demoContext.mainWindow.setWidth(1280);
-	demoContext.mainWindow.setHeight(720);
-	demoContext.mainWindow.setCenteredX();
-	demoContext.mainWindow.setCenteredY();
-	demoContext.mainWindow.show();
+	demoContextState.showWindowDefault(glm::ivec2(1280, 720));
+	demoContext.mainWindow.setX(0);
+	demoContext.mainWindow.setY(32);
 
 	const se::time::Time minFrameTime = se::time::fromSeconds(1.0f / float(60.0f));
 	while (true)
@@ -37,7 +37,7 @@ int main()
 		SE_SCOPE_PROFILER("Frame");
 		const se::time::ScopedFrameLimiter frameLimiter(minFrameTime);
 
-		if (!demoContext.update())
+		if (!demoContextState.update())
 		{
 			break;
 		}
@@ -47,7 +47,7 @@ int main()
 		}
 		ImGui::End();
 
-		demoContext.render();
+		demoContextState.render();
 	}
 
 	return 0;
