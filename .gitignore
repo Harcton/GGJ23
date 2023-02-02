@@ -1,5 +1,13 @@
-﻿bin/
-obj/
+﻿obj/
+
+# bin folder
+bin/*
+!bin/data/
+bin/data/assets/shader/
+
+# Shader headers
+assets/shader/*.sh
+assets/shader/varying.def.sc
 
 .vs/
 *.TMP
