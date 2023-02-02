@@ -18,6 +18,7 @@
 #include "SpehsEngine/Graphics/TextureManager.h"
 #include "SpehsEngine/Graphics/View.h"
 #include "SpehsEngine/Graphics/Window.h"
+#include "SpehsEngine/GUI/GUIView.h"
 #include "SpehsEngine/ImGui/Utility/BackendWrapper.h"
 #include "SpehsEngine/Input/EventCatcher.h"
 #include "SpehsEngine/Input/EventSignaler.h"
@@ -30,6 +31,7 @@ struct DemoContextState::Impl
 		: mainWindow(true)
 		, renderer(mainWindow, se::graphics::RendererFlag::VSync | se::graphics::RendererFlag::MSAA4, se::graphics::RendererBackend::Direct3D11)
 		, view(scene, camera)
+		, guiView(shaderManager, textureManager, fontManager, eventSignaler, 9001)
 		, imguiBackend(eventSignaler, 0, renderer)
 		, imGraphics(view, shaderManager, textureManager, fontManager, modelDataManager, shapeGenerator)
 	{
@@ -62,6 +64,12 @@ struct DemoContextState::Impl
 
 		imGraphics.init();
 		ImGfx::init(imGraphics);
+
+
+		///////////////
+		// GUI
+
+		mainWindow.add(guiView.getView());
 
 
 		///////////////
@@ -152,6 +160,7 @@ struct DemoContextState::Impl
 			modelDataManager,
 			shapeGenerator,
 			imGraphics,
+			guiView,
 			imguiBackend,
 			audioEngine,
 			audioManager,
@@ -177,6 +186,8 @@ struct DemoContextState::Impl
 	se::graphics::ModelDataManager modelDataManager;
 	se::graphics::ShapeGenerator shapeGenerator;
 	se::debug::ImmediateModeGraphics imGraphics;
+
+	se::gui::GUIView guiView;
 
 	// ImGui
 	se::imgui::BackendWrapper imguiBackend;

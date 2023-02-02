@@ -38,6 +38,10 @@ namespace se
 		class ModelDataManager;
 		class ShapeGenerator;
 	}
+	namespace gui
+	{
+		class GUIView;
+	}
 }
 
 struct DemoContext
@@ -61,6 +65,9 @@ struct DemoContext
 	se::graphics::ModelDataManager &modelDataManager;
 	se::graphics::ShapeGenerator &shapeGenerator;
 	se::debug::ImmediateModeGraphics &imGraphics;
+
+	// GUI
+	se::gui::GUIView& guiView;
 
 	// ImGui
 	se::imgui::BackendWrapper &imguiBackend;
