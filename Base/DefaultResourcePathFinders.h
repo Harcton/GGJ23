@@ -1,14 +1,10 @@
 #pragma once
 
 #include "SpehsEngine/Core/ResourcePathFinder.h"
-#include "SpehsEngine/Core/SE_Assert.h"
-#include "SpehsEngine/Core/StringViewUtilityFunctions.h"
 #include "SpehsEngine/Graphics/Renderer.h"
-#include "SpehsEngine/Graphics/Types.h"
-#include <string>
 
 
-static const std::string DATA_PATH = "data/";
+static const std::string ASSET_PATH = "data/assets/";
 
 
 class ShaderPathFinder : public se::ResourcePathFinder
@@ -26,12 +22,12 @@ public:
 		case se::graphics::RendererBackend::Gnm:
 		case se::graphics::RendererBackend::Nvn:		break;
 
-		case se::graphics::RendererBackend::Direct3D9:	return DATA_PATH + "shaders/dx9/" + _resource;
-		case se::graphics::RendererBackend::Direct3D11: return DATA_PATH + "shaders/dx11/" + _resource;
-		case se::graphics::RendererBackend::Metal:		return DATA_PATH + "shaders/metal/" + _resource;
+		case se::graphics::RendererBackend::Direct3D9:	return ASSET_PATH + "shader/dx9/" + _resource + ".bin";
+		case se::graphics::RendererBackend::Direct3D11: return ASSET_PATH + "shader/dx11/" + _resource + ".bin";
+		case se::graphics::RendererBackend::Metal:		return ASSET_PATH + "shader/metal/" + _resource + ".bin";
 		case se::graphics::RendererBackend::OpenGLES:
-		case se::graphics::RendererBackend::OpenGL:		return DATA_PATH + "shaders/glsl/" + _resource;
-		case se::graphics::RendererBackend::Vulkan:		return DATA_PATH + "shaders/spirv/" + _resource;
+		case se::graphics::RendererBackend::OpenGL:		return ASSET_PATH + "shader/glsl/" + _resource + ".bin";
+		case se::graphics::RendererBackend::Vulkan:		return ASSET_PATH + "shader/spirv/" + _resource + ".bin";
 		}
 
 		se_assert_m(false, "Unknown RendererBackend: " + std::to_string((int)rendererBackend));
@@ -46,7 +42,7 @@ public:
 
 	std::string getPath(const std::string_view _resource) const override
 	{
-		return DATA_PATH + "textures/" + _resource;
+		return ASSET_PATH + "texture/" + _resource;
 	}
 };
 
@@ -57,7 +53,7 @@ public:
 
 	std::string getPath(const std::string_view _resource) const override
 	{
-		return DATA_PATH + "fonts/" + _resource;
+		return ASSET_PATH + "font/" + _resource;
 	}
 };
 
@@ -68,7 +64,7 @@ public:
 
 	std::string getPath(const std::string_view _resource) const override
 	{
-		return DATA_PATH + "models/" + _resource;
+		return ASSET_PATH + "model/" + _resource;
 	}
 };
 
@@ -79,6 +75,6 @@ public:
 
 	std::string getPath(const std::string_view _resource) const override
 	{
-		return DATA_PATH + "audio/" + _resource;
+		return ASSET_PATH + "audio/" + _resource;
 	}
 };
