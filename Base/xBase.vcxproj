@@ -140,8 +140,10 @@
     <ClInclude Include="DefaultResourcePathFinders.h" />
     <ClInclude Include="DemoContext.h" />
     <ClInclude Include="DemoContextState.h" />
+    <ClInclude Include="Net\Packets.h" />
     <ClInclude Include="PrecompiledInclude.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="StrongInt.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

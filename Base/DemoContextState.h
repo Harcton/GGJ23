@@ -3,7 +3,6 @@
 #include "Base/DemoContext.h"
 
 
-
 class DemoContextState
 {
 public:
