@@ -133,7 +133,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="LobbyClient.cpp" />
+    <ClCompile Include="CameraController.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="MaterialManager.cpp" />
+    <ClCompile Include="SoundPlayer.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -143,6 +146,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LobbyClient.h" />
+    <ClInclude Include="CameraController.h" />
+    <ClInclude Include="MaterialManager.h" />
+    <ClInclude Include="SoundPlayer.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
