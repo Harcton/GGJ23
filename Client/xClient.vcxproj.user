@@ -21,6 +21,6 @@
     <LocalDebuggerEnvironment>PATH=%PATH%;$(SolutionDir)/Dependencies/dll/$(Platform)/;$(SolutionDir)/Dependencies/dll/$(Platform)/$(Configuration)/;$(SPEHSENGINE_ROOT)/Dependencies/dll/$(Platform)/$(Configuration)/;$(SPEHSENGINE_ROOT)/Dependencies/dll/$(Platform)/;</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup>
-    <ShowAllFiles>false</ShowAllFiles>
+    <ShowAllFiles>true</ShowAllFiles>
   </PropertyGroup>
 </Project>

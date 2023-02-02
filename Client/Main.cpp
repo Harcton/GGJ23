@@ -11,6 +11,7 @@
 #include "SpehsEngine/Debug/DebugLib.h"
 #include "Base/DemoContextState.h"
 #include "Client/LobbyClient.h"
+#include "Client/Playground.h"
 
 
 int main(const int argc, const char** argv)
@@ -29,14 +30,16 @@ int main(const int argc, const char** argv)
 	(void)demoContext;
 
 	demoContextState.showWindowDefault(glm::ivec2(1280, 720));
+	constexpr se::time::Time minFrameTime = se::time::fromSeconds(1.0f / float(120.0f));
 
 	se_assert(argc > 0);
 	const std::string processFilepath = argv[0];
 	se::net::ConnectionManager2 connectionManager("Client");
 
 	// Lobby loop
-	const se::time::Time minFrameTime = se::time::fromSeconds(1.0f / float(60.0f));
 	std::shared_ptr<se::net::Connection2> connection;
+
+	//if (false)
 	{
 		LobbyClient lobbyClient(demoContext, connectionManager, processFilepath);
 		while (true)
@@ -47,7 +50,7 @@ int main(const int argc, const char** argv)
 			connectionManager.update();
 			if (!demoContextState.update())
 			{
-				break;
+				return 0;
 			}
 			lobbyClient.update();
 			lobbyClient.render();
@@ -61,6 +64,8 @@ int main(const int argc, const char** argv)
 		}
 	}
 
+	Playground playground{ demoContext };
+
 	// Game loop
 	while (true)
 	{
@@ -72,6 +77,8 @@ int main(const int argc, const char** argv)
 		{
 			break;
 		}
+
+		playground.update();
 
 		if (ImGui::Begin("Client game"))
 		{
