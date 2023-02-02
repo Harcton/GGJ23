@@ -28,6 +28,7 @@ class Playground::Impl
 {
 public:
 	Impl(DemoContext&);
+	~Impl();
 	void update();
 private:
 
@@ -56,6 +57,10 @@ void Playground::update()
 
 static constexpr int inputPriority = 12345;
 
+Playground::Impl::~Impl()
+{
+	context.guiView.remove(guiRoot);
+}
 Playground::Impl::Impl(DemoContext& _context)
 	: context(_context)
 	, soundPlayer(_context)
@@ -101,6 +106,30 @@ Playground::Impl::Impl(DemoContext& _context)
 				case se::input::Key::A: movement.x += 1.0f; return true;
 				case se::input::Key::D: movement.x -= 1.0f; return true;
 			}
+			return false;
+		}, inputPriority);
+	context.eventSignaler.connectToJoystickButtonSignal(
+		connections.add(),
+		[this](const se::input::JoystickButtonEvent& _event)
+		{
+			if (_event.type != se::input::JoystickButtonEvent::Type::Hold)
+				return false;
+			switch (_event.buttonIndex)
+			{
+				case 11: movement.z += 1.0f; return true;
+				case 12: movement.z -= 1.0f; return true;
+				case 13: movement.x += 1.0f; return true;
+				case 14: movement.x -= 1.0f; return true;
+			}
+			return false;
+		}, inputPriority);
+	context.eventSignaler.connectToJoystickAxisSignal(
+		connections.add(),
+		[this](const se::input::JoystickAxisEvent& _event)
+		{
+			//se::log::info("JoystickAxisEvent");
+			//se::log::info("	axisState: " + std::to_string(_event.axisState));
+			//se::log::info("	axisIndex: " + std::to_string(_event.axisIndex));
 			return false;
 		}, inputPriority);
 
