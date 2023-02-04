@@ -26,12 +26,12 @@ using namespace se::gui::unit_literals;
 class Playground::Impl
 {
 public:
-	Impl(SessionContext&);
+	Impl(ClientContext&);
 	~Impl();
 	void update();
 private:
 
-	SessionContext& context;
+	ClientContext& context;
 	se::ScopedConnections connections;
 	glm::vec3 movement{};
 	std::optional<SoundId> boingSoundId;
@@ -43,7 +43,7 @@ private:
 	GUIElement guiRoot;
 };
 
-Playground::Playground(SessionContext& _context)
+Playground::Playground(ClientContext& _context)
 	: impl(std::make_unique<Impl>(_context))
 {}
 Playground::~Playground()
@@ -59,7 +59,7 @@ Playground::Impl::~Impl()
 {
 	context.guiView.remove(guiRoot);
 }
-Playground::Impl::Impl(SessionContext& _context)
+Playground::Impl::Impl(ClientContext& _context)
 	: context(_context)
 	, soundPlayer(_context)
 	, ambientLight(se::Color{}, 0.5f)
