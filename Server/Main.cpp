@@ -16,8 +16,7 @@
 #include "Server/PacketBroadcaster.h"
 #include "Server/PlayerCharacterServer.h"
 #include "Server/RootServer.h"
-#include "Server/RadarGui.h"
-#include "Server/MutatorGui.h"
+#include "Server/OperatorHud.h"
 
 
 int main()
@@ -76,16 +75,16 @@ int main()
 	PacketBroadcaster packetBroadcaster(serverContext);
 	PlayerCharacterServer playerCharacterServer(serverContext);
 	RootServer rootServer(serverContext, constants::worldSize);
-	RadarGui radarGui(serverContext, playerCharacterServer, rootServer);
-	MutatorGui mutatorGui(serverContext, playerCharacterServer);
+	OperatorHud operatorHud(serverContext, playerCharacterServer, rootServer);
+
 	while (true)
 	{
 		SE_SCOPE_PROFILER("Frame");
 		const se::time::ScopedFrameLimiter frameLimiter(minFrameTime);
 
 		connectionManager.update();
-		radarGui.update();
 		rootServer.update();
+		operatorHud.update();
 		playerCharacterServer.update();
 		if (!demoContextState.update())
 		{

@@ -4,13 +4,13 @@ class PlayerCharacterServer;
 class RootServer;
 
 
-class RadarGui
+class RadarGui : public IOperatorGui
 {
 public:
 	RadarGui(ServerContext& _context, PlayerCharacterServer& _playerCharacterServer, RootServer& _rootServer);
 	~RadarGui();
 
-	void update();
+	std::optional<OperatorGui> update() final;
 
 private:
 	struct Impl;

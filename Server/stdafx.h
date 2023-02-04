@@ -17,3 +17,4 @@
 
 #include "Base/PrecompiledInclude.h"
 #include "Server/ServerContext.h"
+#include "Server/IOperatorGui.h"

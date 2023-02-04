@@ -3,13 +3,13 @@
 class PlayerCharacterServer;
 
 
-class MutatorGui
+class MutatorGui : public IOperatorGui
 {
 public:
 	MutatorGui(ServerContext& _context, PlayerCharacterServer& _playerCharacterServer);
 	~MutatorGui();
 
-	void update();
+	std::optional<OperatorGui> update() final;
 
 private:
 	struct Impl;

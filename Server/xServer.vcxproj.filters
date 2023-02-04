@@ -31,6 +31,12 @@
     <ClCompile Include="MutatorGui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MonitorGui.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OperatorHud.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -58,6 +64,15 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="MutatorGui.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MonitorGui.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IOperatorGui.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OperatorHud.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

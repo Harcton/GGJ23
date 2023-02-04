@@ -64,7 +64,7 @@ struct RadarGui::Impl
 		return GUIVec2(glm::vec2(scenePosition.x, scenePosition.y) / constants::worldSize + glm::vec2(0.5f, 0.5f), GUIUnitType::Parent);
 	}
 
-	void update()
+	std::optional<OperatorGui> update()
 	{
 		for (const std::pair<const ClientId, PlayerUpdatePacket>& pair : playerCharacterServer.getPlayerUpdatePackets())
 		{
@@ -90,6 +90,7 @@ struct RadarGui::Impl
 				it = rootShapes.erase(it);
 			}
 		}
+		return nextOperatorGui;
 	}
 
 	void renderRootDev(const RootServer::Root& _root)
@@ -134,6 +135,7 @@ struct RadarGui::Impl
 	se::gui::GUIShape rootShape;
 	std::unordered_map<ClientId, se::gui::GUIShape*> playerCharacterShapes;
 	std::unordered_map<RootId, se::gui::GUIShape*> rootShapes;
+	std::optional<OperatorGui> nextOperatorGui;
 };
 
 RadarGui::RadarGui(ServerContext& _context, PlayerCharacterServer& _playerCharacterServer, RootServer& _rootServer)
@@ -146,7 +148,7 @@ RadarGui::~RadarGui()
 	// ~Impl()
 }
 
-void RadarGui::update()
+std::optional<IOperatorGui::OperatorGui> RadarGui::update()
 {
-	impl->update();
+	return impl->update();
 }
