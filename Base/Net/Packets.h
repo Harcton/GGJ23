@@ -9,6 +9,10 @@ enum class PacketType : uint8_t
 	PlayerUpdate,
 	PlayerUpdates,
 	BulletCreate,
+	RootCreate,
+	RootUpdate,
+	RootRemove,
+	RootDamage,
 };
 
 // Client -> server
@@ -116,4 +120,83 @@ struct BulletCreatePacket
 	}
 	glm::vec2 position2D;
 	glm::vec2 direction2D;
+};
+
+// Server -> client
+struct RootCreatePacket
+{
+	void write(se::WriteBuffer& writeBuffer) const
+	{
+		se_write(writeBuffer, start);
+		se_write(writeBuffer, end);
+		se_write(writeBuffer, rootId);
+		se_write(writeBuffer, parentRootId);
+		se_write(writeBuffer, health);
+	}
+	bool read(se::ReadBuffer& readBuffer)
+	{
+		se_read(readBuffer, start);
+		se_read(readBuffer, end);
+		se_read(readBuffer, rootId);
+		se_read(readBuffer, parentRootId);
+		se_read(readBuffer, health);
+		return true;
+	}
+	glm::vec2 start;
+	glm::vec2 end;
+	RootId rootId;
+	RootId parentRootId;
+	float health = 0.0f;
+};
+
+// Server -> client
+struct RootUpdatePacket
+{
+	void write(se::WriteBuffer& writeBuffer) const
+	{
+		se_write(writeBuffer, rootId);
+		se_write(writeBuffer, health);
+	}
+	bool read(se::ReadBuffer& readBuffer)
+	{
+		se_read(readBuffer, rootId);
+		se_read(readBuffer, health);
+		return true;
+	}
+	RootId rootId;
+	float health = 0.0f;
+};
+
+// Server -> client
+struct RootRemovePacket
+{
+	void write(se::WriteBuffer& writeBuffer) const
+	{
+		se_write(writeBuffer, rootId);
+	}
+	bool read(se::ReadBuffer& readBuffer)
+	{
+		se_read(readBuffer, rootId);
+		return true;
+	}
+	RootId rootId;
+	float health = 0.0f;
+};
+
+// Client -> server
+struct RootDamagePacket
+{
+	void write(se::WriteBuffer& writeBuffer) const
+	{
+		se_write(writeBuffer, rootId);
+		se_write(writeBuffer, damage);
+	}
+	bool read(se::ReadBuffer& readBuffer)
+	{
+		se_read(readBuffer, rootId);
+		se_read(readBuffer, damage);
+		return true;
+	}
+	RootId rootId;
+	float damage = 0.0f;
 };

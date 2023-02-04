@@ -1,5 +1,7 @@
 #pragma once
 
+struct ClientContext;
+
 
 class BulletManager
 {

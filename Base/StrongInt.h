@@ -4,4 +4,6 @@
 
 
 SE_STRONG_INT(uint16_t, ClientId, 0);
+SE_STRONG_INT(uint16_t, RootId, 0);
 SE_STRONG_INT_STD(ClientId);
+SE_STRONG_INT_STD(RootId);

@@ -8,6 +8,7 @@
 #include "SpehsEngine/Graphics/Shape.h"
 #include "SpehsEngine/Graphics/TextureManager.h"
 #include "Base/ClientUtility/MaterialManager.h"
+#include "Base/Net/Packets.h"
 #include "Client/BulletManager.h"
 
 using namespace se::graphics;
@@ -109,8 +110,17 @@ struct EvilRootManager::Impl
 		std::optional<Shape> head;
 	};
 
+	void sendRootDamage(const RootId _rootId, const float _damage)
+	{
+		RootDamagePacket packet;
+		packet.rootId = _rootId;
+		packet.damage = _damage;
+		context.packetman.sendPacket<RootDamagePacket>(PacketType::RootDamage, packet, true);
+	}
+
 	std::vector<std::unique_ptr<EvilRootData>> rootData;
 	se::time::Time lastSpawned = se::time::Time::zero;
+	se::ScopedConnections scopedConnections;
 };
 
 EvilRootManager::EvilRootManager(ClientContext& _context, BulletManager& _bulletManager, float _worldSize)
@@ -127,6 +137,21 @@ EvilRootManager::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 	, bulletManager(_bulletManager)
 	, worldRadius(_worldSize * 0.5f)
 {
+	context.packetman.registerReceiveHandler<RootCreatePacket>(PacketType::RootCreate, scopedConnections.add(),
+		[this](RootCreatePacket& _packet, const bool _reliable)
+		{
+			se::log::info("Root create TODO");
+		});
+	context.packetman.registerReceiveHandler<RootUpdatePacket>(PacketType::RootUpdate, scopedConnections.add(),
+		[this](RootUpdatePacket& _packet, const bool _reliable)
+		{
+			se::log::info("Root update TODO");
+		});
+	context.packetman.registerReceiveHandler<RootRemovePacket>(PacketType::RootRemove, scopedConnections.add(),
+		[this](RootRemovePacket& _packet, const bool _reliable)
+		{
+			se::log::info("Root remove TODO");
+		});
 }
 void EvilRootManager::Impl::update()
 {

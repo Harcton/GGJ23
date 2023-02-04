@@ -15,6 +15,7 @@
 #include "Server/LobbyServer.h"
 #include "Server/PacketBroadcaster.h"
 #include "Server/PlayerCharacterServer.h"
+#include "Server/RootServer.h"
 #include "Server/RadarGui.h"
 
 
@@ -73,6 +74,7 @@ int main()
 	};
 	PacketBroadcaster packetBroadcaster(serverContext);
 	PlayerCharacterServer playerCharacterServer(serverContext);
+	RootServer rootServer(serverContext, constants::worldSize);
 	RadarGui radarGui(serverContext, playerCharacterServer);
 	while (true)
 	{
@@ -81,6 +83,7 @@ int main()
 
 		connectionManager.update();
 		radarGui.update();
+		rootServer.update();
 		playerCharacterServer.update();
 		if (!demoContextState.update())
 		{
