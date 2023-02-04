@@ -11,7 +11,9 @@
 #include "SpehsEngine/GUI/GUILib.h"
 #include "SpehsEngine/Debug/DebugLib.h"
 #include "Base/DemoContextState.h"
+#include "Base/UserSettingsWindow.h"
 #include "Server/LobbyServer.h"
+#include "Server/PacketBroadcaster.h"
 #include "Server/PlayerCharacterServer.h"
 
 
@@ -34,6 +36,7 @@ int main()
 
 	se::ScopedConnections scopedConnections;
 	se::net::ConnectionManager2 connectionManager("server");
+	UserSettingsWindow userSettingsWindow(demoContext);
 
 	// Lobby loop
 	const se::time::Time minFrameTime = se::time::fromSeconds(1.0f / float(60.0f));
@@ -67,6 +70,7 @@ int main()
 		demoContext,
 		clients,
 	};
+	PacketBroadcaster packetBroadcaster(serverContext);
 	PlayerCharacterServer playerCharacterServer(serverContext);
 	while (true)
 	{

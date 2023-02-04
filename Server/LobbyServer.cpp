@@ -26,6 +26,7 @@ struct LobbyServer::Impl
 	Impl(DemoContext& _context, se::net::ConnectionManager2& _connectionManager)
 		: context(_context)
 		, connectionManager(_connectionManager)
+		, targetClientCount(std::max(uint8_t(1), _context.userSettings.getDefaultTargetClientCount()))
 	{
 		connectionManager.startAcceptingIP(se::net::Port(41623));
 		connectionManager.connectToIncomingConnectionSignal(scopedConnections.add(),
@@ -78,6 +79,14 @@ struct LobbyServer::Impl
 			PacketType::LobbyReady, client->readyConnection,
 			[this, client](LobbyReadyPacket& _packet, const bool _reliable)
 			{
+				if (_packet.ready)
+				{
+					se::log::info("Client is ready: " + client->client->name);
+				}
+				else
+				{
+					se::log::info("Client is not ready: " + client->client->name);
+				}
 				client->ready = _packet.ready;
 			});
 	}

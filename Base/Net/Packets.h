@@ -8,6 +8,7 @@ enum class PacketType : uint8_t
 	LobbyStart,
 	PlayerUpdate,
 	PlayerUpdates,
+	BulletCreate,
 };
 
 // Client -> server
@@ -97,4 +98,22 @@ struct PlayerUpdatesPacket
 		return true;
 	}
 	std::unordered_map<ClientId, PlayerUpdatePacket> playerUpdatePackets;
+};
+
+// Client <-> server
+struct BulletCreatePacket
+{
+	void write(se::WriteBuffer& writeBuffer) const
+	{
+		se_write(writeBuffer, position2D);
+		se_write(writeBuffer, direction2D);
+	}
+	bool read(se::ReadBuffer& readBuffer)
+	{
+		se_read(readBuffer, position2D);
+		se_read(readBuffer, direction2D);
+		return true;
+	}
+	glm::vec2 position2D;
+	glm::vec2 direction2D;
 };

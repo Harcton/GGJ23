@@ -38,15 +38,9 @@ struct LobbyClient::Impl
 					break;
 				case se::net::Connection2::Status::Connected:
 					ImGui::Text("Connected");
-					if (ImGui::InputT("Ready", ready) || context.userSettings.getSkipLobby())
+					if (ImGui::InputT("Ready", ready))
 					{
-						LobbyReadyPacket packet;
-						packet.ready = ready || context.userSettings.getSkipLobby();
-						if (packet.ready != ready)
-						{
-							ready = packet.ready;
-							packetman->sendPacket(PacketType::LobbyReady, packet, true);
-						}
+						sendReady();
 					}
 					break;
 				case se::net::Connection2::Status::Disconnected:
@@ -84,6 +78,11 @@ struct LobbyClient::Impl
 													{
 														startRequested = true;
 													});
+												if (context.userSettings.getSkipLobby())
+												{
+													ready = true;
+													sendReady();
+												}
 											}
 											else
 											{
@@ -106,6 +105,13 @@ struct LobbyClient::Impl
 				se::createProcess(processFilepath, "");
 			}
 		}
+	}
+
+	void sendReady()
+	{
+		LobbyReadyPacket packet;
+		packet.ready = ready;
+		packetman->sendPacket(PacketType::LobbyReady, packet, true);
 	}
 
 	std::optional<LobbyResult> getResult() const

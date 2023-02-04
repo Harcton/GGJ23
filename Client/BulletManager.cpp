@@ -9,6 +9,7 @@
 #include "SpehsEngine/Graphics/TextureManager.h"
 #include "SpehsEngine/Input/EventSignaler.h"
 #include "Base/ClientUtility/MaterialManager.h"
+#include "Base/Net/Packets.h"
 
 using namespace se::graphics;
 
@@ -26,8 +27,8 @@ struct BulletManager::Impl
 
 	struct Bullet
 	{
-		Bullet(ClientContext& _context, const glm::vec3& _pos, const glm::vec3& _dir)
-			: start(_pos), dir(_dir)
+		Bullet(ClientContext& _context, const glm::vec3& _pos, const glm::vec3& _dir, const bool _owned)
+			: start(_pos), dir(_dir), owned(_owned)
 		{
 			model.generate(ShapeType::Ball, ShapeParameters{}, &_context.shapeGenerator);
 			model.setPosition(start);
@@ -38,9 +39,11 @@ struct BulletManager::Impl
 		}
 		const glm::vec3 start;
 		const glm::vec3 dir;
+		const bool owned;
 		Shape model;
 	};
 	std::vector<std::unique_ptr<Bullet>> bullets;
+	se::ScopedConnections scopedConnections;
 };
 
 
@@ -67,7 +70,14 @@ BulletManager::Impl::Impl(ClientContext& _context, float _worldSize)
 	: context(_context)
 	, worldRadius(_worldSize * 0.5f)
 {
-
+	_context.packetman.registerReceiveHandler<BulletCreatePacket>(PacketType::BulletCreate, scopedConnections.add(),
+		[this](BulletCreatePacket& _packet, const bool _reliable)
+		{
+			const float height = 0.0f;
+			const glm::vec3 position3D(_packet.position2D.x, height, _packet.position2D.y);
+			const glm::vec3 direction3D(_packet.direction2D.x, height, _packet.direction2D.y);
+			bullets.push_back(std::make_unique<Bullet>(context, position3D, direction3D, false));
+		});
 }
 void BulletManager::Impl::update()
 {
@@ -86,7 +96,13 @@ void BulletManager::Impl::update()
 }
 void BulletManager::Impl::shoot(const glm::vec3& _pos, const glm::vec3& _dir)
 {
-	bullets.push_back(std::make_unique<Bullet>(context, _pos, _dir));
+	bullets.push_back(std::make_unique<Bullet>(context, _pos, _dir, true));
+	BulletCreatePacket packet;
+	packet.position2D.x = _pos.x;
+	packet.position2D.y = _pos.z;
+	packet.direction2D.x = _dir.x;
+	packet.direction2D.y = _dir.z;
+	context.packetman.sendPacket(PacketType::BulletCreate, packet, false);
 }
 bool BulletManager::Impl::hitTest(const glm::vec3& _pos, float _radius)
 {

@@ -5,6 +5,7 @@
 p_What(glm::ivec2, Resolution, glm::ivec2(1280, 720)) \
 p_What(bool, SkipLobby, false) \
 p_What(bool, EnableDebugOverviewWindow, false) \
+p_What(uint8_t, DefaultTargetClientCount, 2) \
 
 
 class UserSettings
