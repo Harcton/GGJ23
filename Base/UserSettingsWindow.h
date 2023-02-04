@@ -20,7 +20,7 @@ private:
 	void update();
 
 	DemoContext& context;
-	bool windowOpen = true;
+	bool windowOpen = false;
 	size_t displayModeIndex = 0;
 	std::vector<DisplayMode> displayModes;
 	se::ScopedConnections scopedConnections;

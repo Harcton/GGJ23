@@ -6,6 +6,7 @@
 #include "SpehsEngine/Graphics/Renderer.h"
 #include "SpehsEngine/ImGUi/Utility/ImGuiUtility.h"
 #include "SpehsEngine/ImGui/Utility/BackendWrapper.h"
+#include "SpehsEngine/Input/EventSignaler.h"
 
 
 const uint32_t currentVersion = 0;
@@ -18,6 +19,16 @@ UserSettingsWindow::UserSettingsWindow(DemoContext& _demoContext)
 		{
 			update();
 		});
+	context.eventSignaler.connectToKeyboardSignal(scopedConnections.add(),
+		[this](const se::input::KeyboardEvent &event)->bool
+		{
+			if (event.isPress() && event.key == se::input::Key::F10)
+			{
+				windowOpen = !windowOpen;
+				return true;
+			}
+			return false;
+		}, 50);
 }
 
 void UserSettingsWindow::update()
