@@ -63,8 +63,8 @@ void RootsGame::update()
 
 RootsGame::Impl::Impl(ClientContext& _context)
 	: context(_context)
-	, ambientLight(se::Color{}, 1.0f)
-	, sunLight(se::Color{}, 1.0f, glm::vec3{ 1.0f, 5.0f, 1.0f })
+	, ambientLight(se::Color{}, 0.5f)
+	, sunLight(se::Color{}, 0.5f, glm::vec3{ 1.0f, 5.0f, 1.0f })
 	, bulletManager(_context, constants::worldSize)
 	, rootManager(_context, bulletManager, constants::worldSize)
 	, player(_context, bulletManager)
@@ -97,29 +97,22 @@ RootsGame::Impl::Impl(ClientContext& _context)
 	}
 
 	{
-		ShapeParameters params;
-		params.generateNormals = true;
-		params.generateTangents = true;
-		params.resolution = 100;
-		//params.uvScale = 1.0f / worldSize;
-
 		auto material = context.materialManager.createMaterial(DefaultMaterialType::Phong);
 		material->setTexture(context.textureManager.create("ground.png", "ground.png"), PhongTextureType::Color);
 		material->setTexture(context.textureManager.find("flat_normal"), PhongTextureType::Normal);
-		//material->setTexture(context.textureManager.find("roughness_1"), PhongTextureType::Roughness);
+
+		ShapeParameters params = context.materialManager.getDefaultShapeParams();
+		params.resolution = 100;
+		params.uvScale = 10.0f;
 
 		ground.generate(ShapeType::Circle, params, &context.shapeGenerator);
 		ground.setMaterial(material);
-		ground.setScale(glm::vec3{ constants::worldSize });
+		ground.setScale(glm::vec3{ constants::worldSize, 1.0f, constants::worldSize });
 		context.scene.add(ground);
 	}
 	{
-		auto material = context.materialManager.createMaterial(DefaultMaterialType::Phong);
-		material->setTexture(context.textureManager.find("white_color"), PhongTextureType::Color);
-		material->setTexture(context.textureManager.find("flat_normal"), PhongTextureType::Normal);
-
 		core.loadModelData(context.modelDataManager.create("core", "Base_Structure.fbx"));
-		core.setMaterial(material);
+		core.setMaterial(context.materialManager.getDefaultMaterial());
 		//core.setScale(glm::vec3{ constants::coreSize });
 		context.scene.add(core);
 	}

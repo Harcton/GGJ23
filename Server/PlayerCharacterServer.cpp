@@ -17,7 +17,7 @@ struct PlayerCharacterServer::Impl
 			client->packetman.registerReceiveHandler<PlayerUpdatePacket>(PacketType::PlayerUpdate, scopedConnections.add(),
 				[this, client](PlayerUpdatePacket& _packet, const bool _reliable)
 				{
-					se::log::info("Player update received: " + client->name + ": " + std::to_string(_packet.position.x) + ": " + std::to_string(_packet.position.y));
+					//se::log::info("Player update received: " + client->name + ": " + std::to_string(_packet.position.x) + ": " + std::to_string(_packet.position.y));
 					playerUpdatePackets[client->clientId] = _packet;
 				});
 		}

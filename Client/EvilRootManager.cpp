@@ -44,11 +44,11 @@ struct EvilRootManager::Impl
 			, rootStrain(_packet.rootStrain)
 			, health(_packet.health)
 		{
-			root.generate(ShapeType::Box);
+			root.generate(ShapeType::Box, context.materialManager.getDefaultShapeParams(), &context.shapeGenerator);
 			root.setPosition(glm::vec3{ startPoint });
 			root.setRotation(glm::quatLookAt(growthDir, glm::vec3{0.0f, 1.0f, 0.0f}));
 			root.setColor(se::Color(se::SaddleBrown));
-			root.setMaterial(context.materialManager.createMaterial(DefaultMaterialType::FlatColor));
+			root.setMaterial(context.materialManager.getDefaultMaterial());
 			context.scene.add(root);
 		}
 		void findAndAdd(RootCreatePacket& _packet)
@@ -93,11 +93,11 @@ struct EvilRootManager::Impl
 			if (!head.has_value() && se::time::timeSince(spawnTime) > growthTime)
 			{
 				head.emplace();
-				head->generate(ShapeType::Sphere);
+				head->generate(ShapeType::Sphere, context.materialManager.getDefaultShapeParams(), &context.shapeGenerator);
 				head->setPosition(glm::vec3{ endPoint });
 				head->setScale(glm::vec3{ headRadius });
 				head->setColor(se::Color(se::Red));
-				head->setMaterial(context.materialManager.createMaterial(DefaultMaterialType::FlatColor));
+				head->setMaterial(context.materialManager.getDefaultMaterial());
 				context.scene.add(*head);
 
 				auto mat = context.materialManager.createMaterial(DefaultMaterialType::Text);
@@ -186,8 +186,8 @@ EvilRootManager::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 		{
 			if (_packet.parentRootId == RootId{})
 			{
-				context.soundPlayer.playSound("root_grow.ogg", toVec3(_packet.start));
 				rootData.push_back(std::make_unique<EvilRootVisuals>(context, _packet, bulletManager));
+				context.soundPlayer.playSound("root_grow.ogg", toVec3(_packet.start));
 			}
 			else
 			{

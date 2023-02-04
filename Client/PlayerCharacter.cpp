@@ -5,9 +5,14 @@
 #include "SpehsEngine/Graphics/Model.h"
 #include "SpehsEngine/Graphics/ModelDataManager.h"
 #include "SpehsEngine/Graphics/ShaderManager.h"
+#include "SpehsEngine/Graphics/Window.h"
 #include "SpehsEngine/Graphics/Shape.h"
+#include "SpehsEngine/Graphics/Lights.h"
 #include "SpehsEngine/Graphics/TextureManager.h"
 #include "SpehsEngine/Input/EventSignaler.h"
+#include "SpehsEngine/Physics/3D/Ray3D.h"
+#include "SpehsEngine/Physics/3D/AABBCollider3D.h"
+#include "SpehsEngine/Physics/3D/Collision3D.h"
 #include "Base/Net/Packets.h"
 #include "Base/ClientUtility/MaterialManager.h"
 #include "Base/ClientUtility/CameraController.h"
@@ -21,17 +26,80 @@ using namespace se::graphics;
 
 struct PlayerCharacter::Impl
 {
-	struct PlayerModel
+	class PlayerModel
 	{
 		Model modelBottom;
 		Model modelTop;
+		SpotLight light;
+		glm::vec3 facing{ 0.0f, 0.0f, -1.0f };
+
+	public:
+		void setColor(const se::Color& _color)
+		{
+			modelTop.setColor(_color);
+		}
+		const glm::vec3& getPosition() const
+		{
+			return modelBottom.getPosition();
+		}
+		const glm::vec3& getWeaponPosition() const
+		{
+			return getPosition();
+		}
+		void setPosition(const glm::vec3& _pos)
+		{
+			modelBottom.setPosition(_pos);
+			modelTop.setPosition(_pos);
+			light.setPosition(_pos + glm::vec3{ 0.0f, 2.5f, 0.0f });
+		}
+		void setRotation(const glm::quat& _rot)
+		{
+			modelBottom.setRotation(_rot);
+		}
+		const glm::quat& getRotation() const
+		{
+			return modelBottom.getRotation();
+		}
+		const glm::vec3& getFacing() const
+		{
+			return facing;
+		}
+		void setFacing(const glm::vec3& _dir)
+		{
+			facing = _dir;
+			modelTop.setRotation(glm::quatLookAt(-facing, glm::vec3{ 0.0f, 1.0f, 0.0f }));
+			light.setDirection(facing);
+		}
+		void init(ClientContext& context)
+		{
+			auto mat = context.materialManager.createMaterial(DefaultMaterialType::Phong);
+			mat->setTexture(context.textureManager.find("white_color"), PhongTextureType::Color);
+			mat->setTexture(context.textureManager.find("flat_normal"), PhongTextureType::Normal);
+
+			constexpr glm::vec3 playerModelScale{ 300.0f };
+
+			modelBottom.loadModelData(
+				context.modelDataManager.create("player_bottom", "Character_MechTank_1_Bottom.fbx"));
+			modelBottom.setScale(playerModelScale);
+			modelBottom.setMaterial(mat);
+			context.scene.add(modelBottom);
+
+			modelTop.loadModelData(
+				context.modelDataManager.create("player_top", "Character_MechTank_1_Top.fbx"));
+			modelTop.setScale(playerModelScale);
+			modelTop.setMaterial(mat);
+			context.scene.add(modelTop);
+
+			light.setCone(se::PI<float> *0.33f, se::PI<float> *0.4f);
+			light.setRadius(20.0f, 100.0f);
+			context.scene.add(light);
+		}
 	};
 
 
 	Impl(ClientContext& _context, BulletManager& _bulletManager);
 	~Impl() = default;
 	void update();
-	void initPlayer(PlayerModel& _model, bool _remote);
 	void updatePlayerAttributes();
 	void shoot();
 
@@ -42,10 +110,10 @@ struct PlayerCharacter::Impl
 	PlayerModel model;
 	glm::vec3 input{};
 	glm::vec3 movement{};
-	glm::vec3 facing{0.0f, 0.0f, -1.0f};
 	se::time::Time lastSendUpdateTime;
 	PlayerAttributes playerAttributes;
 	se::time::Time lastShootTime;
+	glm::vec3 mouseWorldPoint{};
 
 	std::unordered_map<ClientId, std::unique_ptr<PlayerModel>> remoteClients;
 	std::vector<std::pair<MutationId, uint16_t>> mutations;
@@ -62,7 +130,20 @@ void PlayerCharacter::update()
 }
 
 
-constexpr glm::vec3 cameraDistance{ 4.0f, 50.0f, 4.0f };
+constexpr glm::vec3 cameraDistance{ 0.0f, 65.0f, 20.0f };
+
+static glm::vec3 getFrustumPoint(ClientContext& context, const glm::vec3& _screenCoordinates)
+{
+	const glm::vec3 screenCoordinatesFlipped(
+		_screenCoordinates.x,
+		float(context.mainWindow.getHeight()) - _screenCoordinates.y,
+		_screenCoordinates.z);
+	return glm::unProject(
+		screenCoordinatesFlipped,
+		context.camera.getViewMatrix(),
+		context.camera.getProjectionMatrix(context.mainWindow.getWidth(), context.mainWindow.getHeight()),
+		glm::ivec4(0, 0, context.mainWindow.getWidth(), context.mainWindow.getHeight()));
+}
 
 PlayerCharacter::Impl::Impl(ClientContext& _context, BulletManager& _bulletManager)
 	: context(_context)
@@ -70,12 +151,11 @@ PlayerCharacter::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 {
 	glm::vec2 playerPos = se::rng::circle(40.0f);
 
-	initPlayer(model, false);
-	model.modelBottom.setPosition(toVec3(playerPos));
-	model.modelTop.setPosition(toVec3(playerPos));
+	model.init(context);
+	model.setPosition(toVec3(playerPos));
 
-	context.camera.setPosition(model.modelTop.getPosition() + cameraDistance);
-	context.camera.setDirection(glm::normalize(model.modelTop.getPosition() - context.camera.getPosition()));
+	context.camera.setPosition(model.getPosition() + cameraDistance);
+	context.camera.setDirection(glm::normalize(model.getPosition() - context.camera.getPosition()));
 
 	context.eventSignaler.connectToKeyboardSignal(
 		connections.add(),
@@ -98,6 +178,25 @@ PlayerCharacter::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 			}
 			return false;
 		}, 1000);
+
+	context.eventSignaler.connectToMouseHoverSignal(
+		connections.add(),
+		[this](const se::input::MouseHoverEvent& _event)
+		{
+			const glm::vec3 screenPoint = getFrustumPoint(context, glm::vec3(_event.position, 0.0f));
+			const se::physics::Ray3D mouseRay(screenPoint,
+				getFrustumPoint(context, glm::vec3(_event.position, 1.0f)));
+
+			const se::physics::Collision3D raycast(
+				mouseRay,
+				se::physics::AABBCollider3D(
+					glm::vec3{ 0.0f, -1.0f, 0.0f },
+					glm::vec3{ 10000.0f, 1.0f, 10000.0f }));
+			se_assert(raycast.hit());
+			mouseWorldPoint = raycast.point();
+			return true;
+		}, 1000);
+
 	context.eventSignaler.connectToMouseButtonSignal(
 		connections.add(),
 		[this](const se::input::MouseButtonEvent& _event)
@@ -121,30 +220,24 @@ PlayerCharacter::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 				auto it = remoteClients.find(id);
 				if (it == remoteClients.end())
 				{
-					//se::log::info("New remote client created.");
 					std::unique_ptr<PlayerModel>& remoteModel = remoteClients[id] = std::make_unique<PlayerModel>();
-					initPlayer(*remoteModel, true);
-					remoteModel->modelBottom.setPosition({ packet.position.x, 0.0f, packet.position.y });
-					remoteModel->modelTop.setPosition({ packet.position.x, 0.0f, packet.position.y });
+					remoteModel->init(context);
+					remoteModel->setPosition(toVec3(packet.position));
 				}
 				else
 				{
 					const glm::vec3 newPos = toVec3(packet.position);
-					//se::log::info("remote pos: " + se::toString(id) + " " + se::toString(newPos));
-					const glm::vec3 diff{ newPos - it->second->modelBottom.getPosition() };
+					const glm::vec3 diff{ newPos - it->second->getPosition() };
 					if (glm::length(diff) > 0.0f)
 					{
-						it->second->modelBottom.setRotation(glm::slerp(
-							it->second->modelBottom.getRotation(),
+						it->second->setFacing(glm::normalize(diff));
+						it->second->setRotation(glm::slerp(
+							it->second->getRotation(),
 							glm::quatLookAt(glm::normalize(diff), glm::vec3{ 0.0f, 1.0f, 0.0f }),
 							0.3f));
 					}
-					it->second->modelBottom.setPosition(glm::mix(
-						it->second->modelBottom.getPosition(),
-						newPos,
-						0.2f));
-					it->second->modelTop.setPosition(glm::mix(
-						it->second->modelBottom.getPosition(),
+					it->second->setPosition(glm::mix(
+						it->second->getPosition(),
 						newPos,
 						0.2f));
 				}
@@ -168,7 +261,7 @@ PlayerCharacter::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 							}
 						}
 					}
-					model.modelTop.setColor(toColor(*addedMutation->rootStrain));
+					model.setColor(toColor(*addedMutation->rootStrain));
 				}
 			}
 			for (std::pair<MutationId, uint16_t>& pair : mutations)
@@ -190,24 +283,27 @@ void PlayerCharacter::Impl::update()
 	{
 		input.y = 0.0f;
 		input = glm::normalize(input);
-		const float acceleration = playerAttributes.movementSpeed * (5.0f / 3.0f);
+		const float acceleration = playerAttributes.movementSpeed * 3.0f;
 		movement += input * acceleration * context.deltaTimeSystem.deltaSeconds;
 		input = {};
 
 		const float len = glm::length(movement);
-		facing = glm::normalize(movement);
-		movement = facing * glm::min(len, playerAttributes.movementSpeed);
-		model.modelBottom.setRotation(glm::quatLookAt(facing, glm::vec3{ 0.0f, 1.0f, 0.0f }));
+		movement = glm::normalize(movement) * glm::min(len, playerAttributes.movementSpeed);
+		model.setRotation(glm::quatLookAt(glm::normalize(movement), glm::vec3{ 0.0f, 1.0f, 0.0f }));
 	}
 
-	glm::vec3 position = model.modelBottom.getPosition() + movement * context.deltaTimeSystem.deltaSeconds;
-	model.modelBottom.setPosition(position);
-	model.modelTop.setPosition(position);
+	glm::vec3 position = model.getPosition() + movement * context.deltaTimeSystem.deltaSeconds;
+	model.setPosition(position);
+
+	model.setFacing(glm::normalize(mouseWorldPoint - model.getPosition()));
 
 	constexpr float deceleration = 1.0f;
 	movement = glm::mix(movement, glm::vec3{}, deceleration * context.deltaTimeSystem.deltaSeconds);
 
-	context.camera.setPosition(glm::mix(context.camera.getPosition(), model.modelTop.getPosition() + facing * 10.0f + cameraDistance, 4.0f * context.deltaTimeSystem.deltaSeconds));
+	context.camera.setPosition(glm::mix(
+		context.camera.getPosition(),
+		model.getPosition() + cameraDistance,
+		5.0f * context.deltaTimeSystem.deltaSeconds));
 	//context.camera.setDirection(glm::normalize(model.getPosition() - context.camera.getPosition()));
 
 	if (se::time::timeSince(lastSendUpdateTime) > se::time::fromSeconds(1.0f / 20.0f))
@@ -218,28 +314,6 @@ void PlayerCharacter::Impl::update()
 		context.packetman.sendPacket(PacketType::PlayerUpdate, packet, false);
 		lastSendUpdateTime = se::time::now();
 	}
-}
-void PlayerCharacter::Impl::initPlayer(PlayerModel& _model, bool _remote)
-{
-	auto mat = context.materialManager.createMaterial(DefaultMaterialType::Phong);
-	mat->setTexture(context.textureManager.find("white_color"), PhongTextureType::Color);
-	mat->setTexture(context.textureManager.find("flat_normal"), PhongTextureType::Normal);
-
-	constexpr glm::vec3 playerModelScale{ 300.0f };
-
-	_model.modelBottom.loadModelData(
-		context.modelDataManager.create("player_bottom", "Character_MechTank_1_Bottom.fbx"));
-	_model.modelBottom.setScale(playerModelScale);
-	_model.modelBottom.setMaterial(mat);
-	_model.modelBottom.setColor(_remote ? se::Color(se::CadetBlue) : se::Color(se::BlueViolet));
-	context.scene.add(_model.modelBottom);
-
-	_model.modelTop.loadModelData(
-		context.modelDataManager.create("player_top", "Character_MechTank_1_Top.fbx"));
-	_model.modelTop.setScale(playerModelScale);
-	_model.modelTop.setMaterial(mat);
-	_model.modelTop.setColor(_remote ? se::Color(se::CadetBlue) : se::Color(se::BlueViolet));
-	context.scene.add(_model.modelTop);
 }
 
 void PlayerCharacter::Impl::updatePlayerAttributes()
@@ -267,14 +341,14 @@ void PlayerCharacter::Impl::shoot()
 			const float angleInterval = playerAttributes.weaponSpread / float(playerAttributes.weaponShotSize - 1);
 			for (size_t i = 0; i < playerAttributes.weaponShotSize; i++)
 			{
-				const glm::vec3 direction = glm::rotate(facing, angle, normal);
-				bulletManager.shoot(model.modelTop.getPosition(), direction, playerAttributes.weaponRange, playerAttributes.weaponVelocity, playerAttributes.weaponDamage, playerAttributes.rootStrainLoadout);
+				const glm::vec3 direction = glm::rotate(model.getFacing(), angle, normal);
+				bulletManager.shoot(model.getPosition(), direction, playerAttributes.weaponRange, playerAttributes.weaponVelocity, playerAttributes.weaponDamage, playerAttributes.rootStrainLoadout);
 				angle += angleInterval;
 			}
 		}
 		else
 		{
-			bulletManager.shoot(model.modelTop.getPosition(), facing, playerAttributes.weaponRange, playerAttributes.weaponVelocity, playerAttributes.weaponDamage, playerAttributes.rootStrainLoadout);
+			bulletManager.shoot(model.getPosition(), model.getFacing(), playerAttributes.weaponRange, playerAttributes.weaponVelocity, playerAttributes.weaponDamage, playerAttributes.rootStrainLoadout);
 		}
 		lastShootTime = se::time::now();
 	}

@@ -8,6 +8,7 @@ namespace se::graphics
 	class Material;
 	class ShaderManager;
 	class TextureManager;
+	struct ShapeParameters;
 }
 
 struct DemoContext;
@@ -29,6 +30,8 @@ public:
 	std::shared_ptr<se::graphics::Material> getMaterial(const std::string& _name);
 	std::shared_ptr<se::graphics::Material> createMaterial(MaterialType _type);
 	std::shared_ptr<se::graphics::Material> createMaterial(se::graphics::DefaultMaterialType _type);
+	std::shared_ptr<se::graphics::Material> getDefaultMaterial();
+	const se::graphics::ShapeParameters& getDefaultShapeParams() const;
 
 private:
 

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Base/ClientUtility/MaterialManager.h"
 
+#include "SpehsEngine/Graphics/Types.h"
 #include "SpehsEngine/Graphics/DefaultMaterials.h"
 #include "SpehsEngine/Graphics/TextureManager.h"
 #include "SpehsEngine/Graphics/ShaderManager.h"
@@ -88,4 +89,20 @@ std::shared_ptr<Material> MaterialManager::createMaterial(MaterialType _type)
 std::shared_ptr<Material> MaterialManager::createMaterial(DefaultMaterialType _type)
 {
 	return se::graphics::createMaterial(_type, shaderManager);
+}
+std::shared_ptr<se::graphics::Material> MaterialManager::getDefaultMaterial()
+{
+	auto mat = createMaterial(DefaultMaterialType::Phong);
+	mat->setTexture(textureManager.find("white_color"), PhongTextureType::Color);
+	mat->setTexture(textureManager.find("flat_normal"), PhongTextureType::Normal);
+	return mat;
+}
+const se::graphics::ShapeParameters& MaterialManager::getDefaultShapeParams() const
+{
+	static const ShapeParameters params
+	{
+		ShapeOrientation::XZ_Plane, 0, 1.0f,
+		true, false, true
+	};
+	return params;
 }

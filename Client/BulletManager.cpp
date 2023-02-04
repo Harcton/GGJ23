@@ -33,11 +33,10 @@ struct BulletManager::Impl
 			const RootStrain _rootStrain, const bool _owned)
 			: start(_pos), dir(_dir), owned(_owned), range(_range), speed(_speed), damage(_damage), rootStrain(_rootStrain)
 		{
-			model.generate(ShapeType::Ball, ShapeParameters{}, &_context.shapeGenerator);
+			model.generate(ShapeType::Ball, _context.materialManager.getDefaultShapeParams(), &_context.shapeGenerator);
 			model.setPosition(start + glm::vec3{ 0.0f, 2.5f, 0.0f });
-			model.setScale(glm::vec3{ 0.5f });
-			model.setMaterial(_context.materialManager.createMaterial(DefaultMaterialType::FlatColor));
 			model.setColor(se::Color(toColor(_rootStrain)));
+			model.setMaterial(_context.materialManager.getDefaultMaterial());
 			_context.scene.add(model);
 		}
 		const glm::vec3 start;
