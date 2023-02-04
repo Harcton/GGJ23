@@ -28,7 +28,6 @@ int main()
 	DemoContextState demoContextState("Server");
 	DemoContext demoContext = demoContextState.getDemoContext();
 
-	demoContextState.showWindowDefault(glm::ivec2(1280, 720));
 	demoContext.mainWindow.setX(0);
 	demoContext.mainWindow.setY(32);
 

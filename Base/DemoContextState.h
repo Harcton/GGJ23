@@ -12,7 +12,6 @@ public:
 	void reset();
 	bool update();
 	void render();
-	void showWindowDefault(const glm::ivec2& resolution);
 
 	DemoContext getDemoContext();
 

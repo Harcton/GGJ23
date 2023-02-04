@@ -24,13 +24,16 @@
 #include "SpehsEngine/Input/EventSignaler.h"
 #include "SpehsEngine/Input/InputManager.h"
 #include "Base/ClientUtility/MaterialManager.h"
-
+#include "Base/UserSettings.h"
+#pragma optimize("", off)
 
 struct DemoContextState::Impl
 {
+
 	Impl(const std::string_view _windowName)
 		: mainWindow(true)
 		, renderer(mainWindow, se::graphics::RendererFlag::VSync | se::graphics::RendererFlag::MSAA4, se::graphics::RendererBackend::Direct3D11)
+		, userSettings(_windowName)
 		, view(scene, camera)
 		, guiView(shaderManager, textureManager, fontManager, eventSignaler, 9001)
 		, imguiBackend(eventSignaler, 0, renderer)
@@ -84,6 +87,18 @@ struct DemoContextState::Impl
 		audioManager.setResourceLoader(audioResourceLoader);
 		audioManager.setResourcePathFinder(audioPathFinder);
 
+		// User settings
+		userSettings.connectToResolutionChangedSignal(scopedConnections.add(),
+			[this](const glm::ivec2 &, const glm::ivec2 &newValue)
+			{
+				mainWindow.setWidth(newValue.x);
+				mainWindow.setHeight(newValue.y);
+			}, true);
+		mainWindow.setBorderless(false);
+		mainWindow.setCenteredX();
+		mainWindow.setCenteredY();
+		mainWindow.show();
+
 		se::log::info("DemoContext init time: " + std::to_string(initTimer.get().asSeconds()) + " seconds", se::log::GREEN);
 	}
 
@@ -110,6 +125,7 @@ struct DemoContextState::Impl
 	bool update()
 	{
 		deltaTimeSystem.update();
+		userSettings.update();
 
 		shaderManager.update();
 		textureManager.update();
@@ -135,16 +151,6 @@ struct DemoContextState::Impl
 		imGraphics.endFrame();
 	}
 
-	void showWindowDefault(const glm::ivec2 &resolution)
-	{
-		mainWindow.setBorderless(false);
-		mainWindow.setWidth(resolution.x);
-		mainWindow.setHeight(resolution.y);
-		mainWindow.setCenteredX();
-		mainWindow.setCenteredY();
-		mainWindow.show();
-	}
-
 	DemoContext getDemoContext()
 	{
 		return DemoContext
@@ -165,6 +171,7 @@ struct DemoContextState::Impl
 			shapeGenerator,
 			imGraphics,
 			materialManager,
+			userSettings,
 			guiView,
 			imguiBackend,
 			audioEngine,
@@ -173,6 +180,7 @@ struct DemoContextState::Impl
 	}
 
 	se::time::DeltaTimeSystem deltaTimeSystem;
+	UserSettings userSettings;
 
 	// Input
 	se::input::EventCatcher eventCatcher;
@@ -202,6 +210,8 @@ struct DemoContextState::Impl
 	// Audio
 	se::audio::AudioEngine audioEngine;
 	se::audio::AudioManager audioManager;
+
+	se::ScopedConnections scopedConnections;
 };
 
 DemoContextState::DemoContextState(const std::string_view _windowName)
@@ -227,11 +237,6 @@ bool DemoContextState::update()
 void DemoContextState::render()
 {
 	impl->render();
-}
-
-void DemoContextState::showWindowDefault(const glm::ivec2& resolution)
-{
-	impl->showWindowDefault(resolution);
 }
 
 DemoContext DemoContextState::getDemoContext()

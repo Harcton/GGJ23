@@ -10,6 +10,7 @@
 #include "SpehsEngine/GUI/GUILib.h"
 #include "SpehsEngine/Debug/DebugLib.h"
 #include "Base/DemoContextState.h"
+#include "Base/UserSettingsWindow.h"
 #include "Client/LobbyClient.h"
 #include "Client/RootsGame.h"
 
@@ -27,14 +28,13 @@ int main(const int argc, const char** argv)
 
 	DemoContextState demoContextState("Client");
 	DemoContext demoContext = demoContextState.getDemoContext();
-	(void)demoContext;
 
-	demoContextState.showWindowDefault(glm::ivec2(1920, 1080));
 	constexpr se::time::Time minFrameTime = se::time::fromSeconds(1.0f / float(120.0f));
 
 	se_assert(argc > 0);
 	const std::string processFilepath = argv[0];
 	se::net::ConnectionManager2 connectionManager("Client");
+	UserSettingsWindow userSettingsWindow(demoContext);
 
 	// Lobby loop
 	std::shared_ptr<se::net::Connection2> connection;

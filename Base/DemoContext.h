@@ -45,6 +45,7 @@ namespace se
 }
 
 class MaterialManager;
+class UserSettings;
 
 
 struct DemoContext
@@ -70,6 +71,7 @@ struct DemoContext
 	se::debug::ImmediateModeGraphics &imGraphics;
 
 	MaterialManager& materialManager;
+	UserSettings& userSettings;
 
 	// GUI
 	se::gui::GUIView& guiView;
