@@ -154,6 +154,23 @@ PlayerCharacter::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 	context.packetman.registerReceiveHandler<PlayerMutatePacket>(PacketType::PlayerMutated, connections.add(),
 		[this](PlayerMutatePacket& _packet, const bool _reliable)
 		{
+			if (const Mutation* const addedMutation = context.mutationDatabase.find(_packet.mutationId))
+			{
+				if (addedMutation->rootStrain)
+				{
+					for (size_t i = 0; i < mutations.size(); i++)
+					{
+						if (const Mutation* const oldMutation = context.mutationDatabase.find(mutations[i].first))
+						{
+							if (oldMutation->mutationCategory == MutationCategory::Loadout)
+							{
+								mutations.erase(mutations.begin() + i--);
+							}
+						}
+					}
+					model.modelTop.setColor(toColor(*addedMutation->rootStrain));
+				}
+			}
 			for (std::pair<MutationId, uint16_t>& pair : mutations)
 			{
 				if (pair.first == _packet.mutationId)
@@ -251,13 +268,13 @@ void PlayerCharacter::Impl::shoot()
 			for (size_t i = 0; i < playerAttributes.weaponShotSize; i++)
 			{
 				const glm::vec3 direction = glm::rotate(facing, angle, normal);
-				bulletManager.shoot(model.modelTop.getPosition(), direction, playerAttributes.weaponRange, playerAttributes.weaponVelocity, playerAttributes.weaponDamage);
+				bulletManager.shoot(model.modelTop.getPosition(), direction, playerAttributes.weaponRange, playerAttributes.weaponVelocity, playerAttributes.weaponDamage, playerAttributes.rootStrainLoadout);
 				angle += angleInterval;
 			}
 		}
 		else
 		{
-			bulletManager.shoot(model.modelTop.getPosition(), facing, playerAttributes.weaponRange, playerAttributes.weaponVelocity, playerAttributes.weaponDamage);
+			bulletManager.shoot(model.modelTop.getPosition(), facing, playerAttributes.weaponRange, playerAttributes.weaponVelocity, playerAttributes.weaponDamage, playerAttributes.rootStrainLoadout);
 		}
 		lastShootTime = se::time::now();
 	}

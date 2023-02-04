@@ -74,7 +74,23 @@ struct LobbyServer::Impl
 	void addClient(std::unique_ptr<LobbyClient>&& _client)
 	{
 		LobbyClient* const client = _client.get();
+		std::unordered_set<RootStrain> usedRootStrains;
+		for (const std::unique_ptr<LobbyClient>& client : clients)
+		{
+			usedRootStrains.insert(client->client->rootStrainLoadout);
+		}
+		RootStrain startingRootStrain = RootStrain::Green;
+		for (size_t i = 0; i < size_t(RootStrain::Size); i++)
+		{
+			const RootStrain rootStrain = RootStrain(i);
+			if (!tryFind(usedRootStrains, rootStrain))
+			{
+				startingRootStrain = rootStrain;
+				break;
+			}
+		}
 		clients.push_back(std::move(_client));
+		clients.back()->client->rootStrainLoadout = startingRootStrain;
 		clients.back()->client->packetman.registerReceiveHandler<LobbyReadyPacket>(
 			PacketType::LobbyReady, client->readyConnection,
 			[this, client](LobbyReadyPacket& _packet, const bool _reliable)
@@ -129,6 +145,10 @@ struct LobbyServer::Impl
 					string += " (ready)";
 				}
 				ImGui::Text(string);
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::SetTooltip("Starting root strain loadout: " + std::to_string(int(client->client->rootStrainLoadout)));
+				}
 			}
 			ImGui::Unindent();
 

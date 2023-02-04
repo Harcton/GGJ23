@@ -21,7 +21,39 @@ struct MutatorGui::Impl
 		context.imguiBackend.connectToPreRenderSignal(scopedConnections.add(),
 			[this]()
 			{
-				if (ImGui::Begin("Mutator"))
+				if (!client)
+				{
+					client = context.clients.front().get();
+				}
+
+				const ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove;
+
+				ImGui::SetNextWindowPos(ImVec2(
+					float(context.mainWindow.getWidth()) * 0.5f,
+					float(context.mainWindow.getHeight()) * 0.5f), 0, ImVec2(1.1f, 0.5f));
+				if (ImGui::Begin("Mutator clients", nullptr, windowFlags))
+				{
+					ImGui::Text("Pilot selection");
+					ImGui::Indent();
+					for (const std::unique_ptr<Client>& c : context.clients)
+					{
+						if (c.get() == client)
+						{
+							ImGui::Text("> " + client->name);
+						}
+						else if (ImGui::Button(c->name))
+						{
+							client = c.get();
+						}
+					}
+					ImGui::Unindent();
+				}
+				ImGui::End();
+
+				ImGui::SetNextWindowPos(ImVec2(
+					float(context.mainWindow.getWidth()) * 0.5f,
+					float(context.mainWindow.getHeight()) * 0.5f), 0, ImVec2(-0.1f, 0.5f));
+				if (ImGui::Begin("Mutator", nullptr, windowFlags))
 				{
 					if (client)
 					{
@@ -29,12 +61,17 @@ struct MutatorGui::Impl
 						ImGui::Indent();
 						for (const Mutation* const mutation : context.mutationDatabase.vector)
 						{
-							if (mutation->mutationCategory != MutationCategory::Loadout)
+							if (!mutation->rootStrain)
 							{
 								continue;
 							}
-							if (ImGui::Button(mutation->name))
+							else if (client->rootStrainLoadout == *mutation->rootStrain)
 							{
+								ImGui::Text("> " + mutation->name);
+							}
+							else if (ImGui::Button(mutation->name))
+							{
+								client->rootStrainLoadout = *mutation->rootStrain;
 								PlayerMutatePacket packet;
 								packet.mutationId = mutation->mutationId;
 								packet.stacks = 1;
@@ -49,11 +86,11 @@ struct MutatorGui::Impl
 							ImGui::Indent();
 							for (const Mutation* const mutation : context.mutationDatabase.vector)
 							{
-								if (mutation->mutationCategory == MutationCategory::Loadout)
+								if (mutation->rootStrain)
 								{
 									continue;
 								}
-								if (ImGui::Button(mutation->name))
+								else if (ImGui::Button(mutation->name))
 								{
 									PlayerMutatePacket packet;
 									packet.mutationId = mutation->mutationId;
@@ -63,41 +100,21 @@ struct MutatorGui::Impl
 							}
 							ImGui::Unindent();
 						}
-						ImGui::Separator();
-						if (ImGui::Button("Back"))
-						{
-							client = nullptr;
-						}
-					}
-					else
-					{
-						for (const std::unique_ptr<Client>& c : context.clients)
-						{
-							if (ImGui::Button(c->name))
-							{
-								client = c.get();
-							}
-						}
 					}
 				}
 				ImGui::End();
 			});
 	}
 
-	~Impl()
-	{
-	}
-
 	std::optional<OperatorGui> update()
 	{
-		return nextOperatorGui;
+		return std::nullopt;
 	}
 
 	ServerContext& context;
 	PlayerCharacterServer& playerCharacterServer;
 	se::ScopedConnections scopedConnections;
 	Client* client = nullptr;
-	std::optional<OperatorGui> nextOperatorGui;
 };
 
 MutatorGui::MutatorGui(ServerContext& _context, PlayerCharacterServer& _playerCharacterServer)

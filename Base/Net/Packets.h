@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Base/RootStrain.h"
+
 
 enum class PacketType : uint8_t
 {
@@ -134,6 +136,7 @@ struct BulletCreatePacket
 		se_write(writeBuffer, range);
 		se_write(writeBuffer, speed);
 		se_write(writeBuffer, damage);
+		se_write(writeBuffer, rootStrain);
 	}
 	bool read(se::ReadBuffer& readBuffer)
 	{
@@ -142,6 +145,7 @@ struct BulletCreatePacket
 		se_read(readBuffer, range);
 		se_read(readBuffer, speed);
 		se_read(readBuffer, damage);
+		se_read(readBuffer, rootStrain);
 		return true;
 	}
 	glm::vec2 position2D;
@@ -149,6 +153,7 @@ struct BulletCreatePacket
 	float range = 0.0f;
 	float speed = 0.0f;
 	float damage = 0.0f;
+	RootStrain rootStrain = RootStrain::Blue;
 };
 
 // Server -> client
@@ -161,6 +166,7 @@ struct RootCreatePacket
 		se_write(writeBuffer, rootId);
 		se_write(writeBuffer, parentRootId);
 		se_write(writeBuffer, health);
+		se_write(writeBuffer, rootStrain);
 	}
 	bool read(se::ReadBuffer& readBuffer)
 	{
@@ -169,6 +175,7 @@ struct RootCreatePacket
 		se_read(readBuffer, rootId);
 		se_read(readBuffer, parentRootId);
 		se_read(readBuffer, health);
+		se_read(readBuffer, rootStrain);
 		return true;
 	}
 	glm::vec2 start;
@@ -176,6 +183,7 @@ struct RootCreatePacket
 	RootId rootId;
 	RootId parentRootId;
 	float health = 0.0f;
+	RootStrain rootStrain = RootStrain::Blue;
 };
 
 // Server -> client

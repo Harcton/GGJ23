@@ -156,6 +156,7 @@
     <ClInclude Include="Net\Packets.h" />
     <ClInclude Include="PlayerAttributes.h" />
     <ClInclude Include="PrecompiledInclude.h" />
+    <ClInclude Include="RootStrain.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StrongInt.h" />
     <ClInclude Include="UserSettings.h" />

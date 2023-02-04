@@ -51,9 +51,10 @@ struct LobbyClient::Impl
 			else
 			{
 				ImGui::InputT("Name", name);
+				ImGui::InputT("Server address", address);
 				if (ImGui::Button("Connect to server") || context.userSettings.getSkipLobby())
 				{
-					connection = connectionManager.connectIP(se::net::Endpoint(se::net::Address("127.0.0.1"), se::net::Port(41623)), false, "Client");
+					connection = connectionManager.connectIP(se::net::Endpoint(se::net::Address(address), se::net::Port(41623)), false, "Client");
 					if (connection)
 					{
 						connection->connectToStatusChangedSignal(scopedConnections.add(),
@@ -136,6 +137,7 @@ struct LobbyClient::Impl
 	std::shared_ptr<se::net::Connection2> connection;
 	std::unique_ptr<se::net::Packetman<PacketType>> packetman;
 	std::string name;
+	std::string address = "127.0.0.1";
 	ClientId myClientId;
 	bool ready = false;
 	bool startRequested = false;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Base/RootStrain.h"
+
 struct PlayerAttributes;
 
 
@@ -8,6 +10,7 @@ struct Mutation
 	MutationId mutationId;
 	std::string name;
 	uint16_t maxStacks = 1;
+	std::optional<RootStrain> rootStrain;
 	MutationCategory mutationCategory = MutationCategory::Default;
 	std::function<void(PlayerAttributes&, const uint16_t)> function;
 };

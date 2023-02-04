@@ -10,6 +10,7 @@ public:
 	struct Root
 	{
 		RootId rootId;
+		RootStrain rootStrain = RootStrain::Blue;
 		glm::vec2 start;
 		glm::vec2 end;
 		float health = 0.0f;

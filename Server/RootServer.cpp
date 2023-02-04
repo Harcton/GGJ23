@@ -109,6 +109,7 @@ struct RootServer::Impl
 			root.end = root.start + glm::normalize(-root.start) * rootLength;
 			root.health = 100.0f;
 			root.spawnTime = se::time::now();
+			root.rootStrain = RootStrain(se::rng::random<size_t>(0, size_t(RootStrain::Size) - 1));
 			roots.push_back(root);
 
 			sendRootCreate(root, nullptr);
@@ -158,6 +159,7 @@ struct RootServer::Impl
 					se::rng::random(-se::PI<float> *0.2f, se::PI<float> *0.2f));
 				child.end = child.start + dir * rootLength;
 				child.spawnTime = se::time::now();
+				child.rootStrain = _root.rootStrain;
 				_root.childTime = se::time::now();
 				_root.children.push_back(child);
 				sendRootCreate(child, &_root);
@@ -177,6 +179,7 @@ struct RootServer::Impl
 		packet.rootId = _root.rootId;
 		packet.parentRootId = parent ? parent->rootId : RootId();
 		packet.health = _root.health;
+		packet.rootStrain = _root.rootStrain;
 		for (const std::unique_ptr<Client>& client : context.clients)
 		{
 			client->packetman.sendPacket<RootCreatePacket>(PacketType::RootCreate, packet, true);

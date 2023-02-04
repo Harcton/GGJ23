@@ -41,6 +41,7 @@ struct EvilRootManager::Impl
 			, endPoint(toVec3(_packet.end))
 			, spawnTime(se::time::now())
 			, growthDir(glm::normalize(endPoint - startPoint))
+			, rootStrain(_packet.rootStrain)
 			, health(_packet.health)
 		{
 			root.generate(ShapeType::Box);
@@ -108,10 +109,12 @@ struct EvilRootManager::Impl
 				context.scene.add(hpText);
 			}
 
-			if (head.has_value() && bulletManager.hitTest(endPoint, headRadius))
+			if (head.has_value())
 			{
-				constexpr float defaultDamage = 10.0f;
-				sendRootDamage(id, defaultDamage);
+				if (const std::optional<float> damage = bulletManager.hitTest(endPoint, headRadius, rootStrain))
+				{
+					sendRootDamage(id, *damage);
+				}
 			}
 
 			for (auto&& branch : branches)
@@ -149,6 +152,7 @@ struct EvilRootManager::Impl
 		const glm::vec3 endPoint;
 		const se::time::Time spawnTime;
 		const glm::vec3 growthDir;
+		const RootStrain rootStrain;
 		Shape root;
 		std::optional<Shape> head;
 		Text hpText;
