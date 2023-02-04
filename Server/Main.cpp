@@ -17,6 +17,7 @@
 #include "Server/PlayerCharacterServer.h"
 #include "Server/RootServer.h"
 #include "Server/RadarGui.h"
+#include "Server/MutatorGui.h"
 
 
 int main()
@@ -76,6 +77,7 @@ int main()
 	PlayerCharacterServer playerCharacterServer(serverContext);
 	RootServer rootServer(serverContext, constants::worldSize);
 	RadarGui radarGui(serverContext, playerCharacterServer, rootServer);
+	MutatorGui mutatorGui(serverContext, playerCharacterServer);
 	while (true)
 	{
 		SE_SCOPE_PROFILER("Frame");

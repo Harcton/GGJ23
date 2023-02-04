@@ -11,8 +11,11 @@
 #include "Base/Net/Packets.h"
 #include "Base/ClientUtility/MaterialManager.h"
 #include "Base/ClientUtility/CameraController.h"
+#include "Base/PlayerAttributes.h"
+#include "Base/MutationDatabase.h"
 #include "Client/BulletManager.h"
-
+#include <glm/gtx/rotate_vector.hpp>
+#pragma optimize("", off)
 using namespace se::graphics;
 
 
@@ -22,6 +25,8 @@ struct PlayerCharacter::Impl
 	~Impl() = default;
 	void update();
 	void initPlayer(Shape& _shape, bool _remote);
+	void updatePlayerAttributes();
+	void shoot();
 
 	ClientContext& context;
 	BulletManager& bulletManager;
@@ -32,8 +37,11 @@ struct PlayerCharacter::Impl
 	glm::vec3 movement{};
 	glm::vec3 facing{0.0f, 0.0f, -1.0f};
 	se::time::Time lastSendUpdateTime;
+	PlayerAttributes playerAttributes;
+	se::time::Time lastShootTime;
 
 	std::unordered_map<ClientId, std::unique_ptr<Shape>> remoteClients;
+	std::vector<std::pair<MutationId, uint16_t>> mutations;
 };
 
 PlayerCharacter::PlayerCharacter(ClientContext& _context, BulletManager& _bulletManager)
@@ -65,10 +73,9 @@ PlayerCharacter::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 		connections.add(),
 		[this](const se::input::KeyboardEvent& _event)
 		{
-			if (_event.type == se::input::KeyboardEvent::Type::Press &&
-				_event.key == se::input::Key::SPACE)
+			if (_event.key == se::input::Key::SPACE && !_event.isRelease())
 			{
-				bulletManager.shoot(model.getPosition(), facing);
+				shoot();
 				return true;
 			}
 
@@ -87,10 +94,9 @@ PlayerCharacter::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 		connections.add(),
 		[this](const se::input::MouseButtonEvent& _event)
 		{
-			if (_event.button == se::input::MouseButton::left &&
-				_event.type == se::input::MouseButtonEvent::Type::Press)
+			if (_event.button == se::input::MouseButton::left && !_event.isRelease())
 			{
-				bulletManager.shoot(model.getPosition(), facing);
+				shoot();
 				return true;
 			}
 			return false;
@@ -131,6 +137,22 @@ PlayerCharacter::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 				}
 			}
 		});
+
+	context.packetman.registerReceiveHandler<PlayerMutatePacket>(PacketType::PlayerMutated, connections.add(),
+		[this](PlayerMutatePacket& _packet, const bool _reliable)
+		{
+			for (std::pair<MutationId, uint16_t>& pair : mutations)
+			{
+				if (pair.first == _packet.mutationId)
+				{
+					pair.second += _packet.stacks;
+					updatePlayerAttributes();
+					return;
+				}
+			}
+			mutations.push_back(std::make_pair(_packet.mutationId, _packet.stacks));
+			updatePlayerAttributes();
+		});
 }
 void PlayerCharacter::Impl::update()
 {
@@ -138,14 +160,13 @@ void PlayerCharacter::Impl::update()
 	{
 		input.y = 0.0f;
 		input = glm::normalize(input);
-		constexpr float acceleration = 50.0f;
-		constexpr float maxSpeed = 30.0f;
+		const float acceleration = playerAttributes.movementSpeed * (5.0f / 3.0f);
 		movement += input * acceleration * context.deltaTimeSystem.deltaSeconds;
 		input = {};
 
 		const float len = glm::length(movement);
 		facing = glm::normalize(movement);
-		movement = facing * glm::min(len, maxSpeed);
+		movement = facing * glm::min(len, playerAttributes.movementSpeed);
 		model.setRotation(glm::quatLookAt(facing, glm::vec3{ 0.0f, 1.0f, 0.0f }));
 	}
 
@@ -177,3 +198,40 @@ void PlayerCharacter::Impl::initPlayer(Shape& _shape, bool _remote)
 	context.scene.add(_shape);
 }
 
+void PlayerCharacter::Impl::updatePlayerAttributes()
+{
+	playerAttributes = PlayerAttributes();
+	for (const std::pair<MutationId, uint16_t>& pair : mutations)
+	{
+		if (const Mutation* const mutation = context.mutationDatabase.find(pair.first))
+		{
+			const uint16_t stacks = std::min(mutation->maxStacks, pair.second);
+			mutation->function(playerAttributes, stacks);
+		}
+	}
+}
+
+void PlayerCharacter::Impl::shoot()
+{
+	se::time::Time weaponInterval = se::time::fromSeconds(0.5f) / playerAttributes.weaponRate;
+	if (se::time::timeSince(lastShootTime) > weaponInterval)
+	{
+		if (playerAttributes.weaponShotSize > 1)
+		{
+			const glm::vec3 normal(0.0f, 1.0f, 0.0f);
+			float angle = -0.5f * playerAttributes.weaponSpread;
+			const float angleInterval = playerAttributes.weaponSpread / float(playerAttributes.weaponShotSize - 1);
+			for (size_t i = 0; i < playerAttributes.weaponShotSize; i++)
+			{
+				const glm::vec3 direction = glm::rotate(facing, angle, normal);
+				bulletManager.shoot(model.getPosition(), direction, playerAttributes.weaponRange, playerAttributes.weaponVelocity, playerAttributes.weaponDamage);
+				angle += angleInterval;
+			}
+		}
+		else
+		{
+			bulletManager.shoot(model.getPosition(), facing, playerAttributes.weaponRange, playerAttributes.weaponVelocity, playerAttributes.weaponDamage);
+		}
+		lastShootTime = se::time::now();
+	}
+}

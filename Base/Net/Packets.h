@@ -8,6 +8,7 @@ enum class PacketType : uint8_t
 	LobbyStart,
 	PlayerUpdate,
 	PlayerUpdates,
+	PlayerMutated,
 	BulletCreate,
 	RootCreate,
 	RootUpdate,
@@ -104,6 +105,24 @@ struct PlayerUpdatesPacket
 	std::unordered_map<ClientId, PlayerUpdatePacket> playerUpdatePackets;
 };
 
+struct PlayerMutatePacket
+{
+	void write(se::WriteBuffer& writeBuffer) const
+	{
+		se_write(writeBuffer, mutationId);
+		se_write(writeBuffer, stacks);
+	}
+	bool read(se::ReadBuffer& readBuffer)
+	{
+		se_read(readBuffer, mutationId);
+		se_read(readBuffer, stacks);
+		return true;
+	}
+	MutationId mutationId;
+	uint16_t stacks = 0;
+	bool clearPrevious = false;
+};
+
 // Client <-> server
 struct BulletCreatePacket
 {
@@ -111,15 +130,24 @@ struct BulletCreatePacket
 	{
 		se_write(writeBuffer, position2D);
 		se_write(writeBuffer, direction2D);
+		se_write(writeBuffer, range);
+		se_write(writeBuffer, speed);
+		se_write(writeBuffer, damage);
 	}
 	bool read(se::ReadBuffer& readBuffer)
 	{
 		se_read(readBuffer, position2D);
 		se_read(readBuffer, direction2D);
+		se_read(readBuffer, range);
+		se_read(readBuffer, speed);
+		se_read(readBuffer, damage);
 		return true;
 	}
 	glm::vec2 position2D;
 	glm::vec2 direction2D;
+	float range = 0.0f;
+	float speed = 0.0f;
+	float damage = 0.0f;
 };
 
 // Server -> client

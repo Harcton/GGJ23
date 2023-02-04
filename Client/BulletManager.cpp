@@ -19,7 +19,7 @@ struct BulletManager::Impl
 	~Impl() = default;
 	Impl(ClientContext& _context, float _worldSize);
 	void update();
-	void shoot(const glm::vec3& _pos, const glm::vec3& _dir);
+	void shoot(const glm::vec3& _pos, const glm::vec3& _dir, const float _range, const float _speed, const float _damage);
 	bool hitTest(const glm::vec3& _pos, float _radius);
 
 	ClientContext& context;
@@ -27,8 +27,8 @@ struct BulletManager::Impl
 
 	struct Bullet
 	{
-		Bullet(ClientContext& _context, const glm::vec3& _pos, const glm::vec3& _dir, const bool _owned)
-			: start(_pos), dir(_dir), owned(_owned)
+		Bullet(ClientContext& _context, const glm::vec3& _pos, const glm::vec3& _dir, const float _range, const float _speed, const float _damage, const bool _owned)
+			: start(_pos), dir(_dir), owned(_owned), range(_range), speed(_speed), damage(_damage)
 		{
 			model.generate(ShapeType::Ball, ShapeParameters{}, &_context.shapeGenerator);
 			model.setPosition(start);
@@ -39,6 +39,9 @@ struct BulletManager::Impl
 		}
 		const glm::vec3 start;
 		const glm::vec3 dir;
+		const float range;
+		const float speed;
+		const float damage;
 		const bool owned;
 		Shape model;
 	};
@@ -56,9 +59,9 @@ void BulletManager::update()
 {
 	impl->update();
 }
-void BulletManager::shoot(const glm::vec3& _pos, const glm::vec3& _dir)
+void BulletManager::shoot(const glm::vec3& _pos, const glm::vec3& _dir, const float _range, const float _speed, const float _damage)
 {
-	impl->shoot(_pos, _dir);
+	impl->shoot(_pos, _dir, _range, _speed, _damage);
 }
 bool BulletManager::hitTest(const glm::vec3& _pos, float _radius)
 {
@@ -76,32 +79,39 @@ BulletManager::Impl::Impl(ClientContext& _context, float _worldSize)
 			const float height = 2.42f;
 			const glm::vec3 position3D(_packet.position2D.x, height, _packet.position2D.y);
 			const glm::vec3 direction3D(_packet.direction2D.x, 0.0f, _packet.direction2D.y);
-			bullets.push_back(std::make_unique<Bullet>(context, position3D, direction3D, false));
+			bullets.push_back(std::make_unique<Bullet>(context, position3D, direction3D, _packet.range, _packet.speed, _packet.damage, false));
 		});
 }
 void BulletManager::Impl::update()
 {
 	for (auto it = bullets.begin(); it != bullets.end(); )
 	{
-		constexpr float bulletSpeed = 100.0f;
 		Bullet& bullet = *it->get();
-		bullet.model.setPosition(bullet.model.getPosition() + bullet.dir * bulletSpeed * context.deltaTimeSystem.deltaSeconds);
-		if (glm::length(bullet.model.getPosition()) > worldRadius + 20.0f)
+		const glm::vec3 position = bullet.model.getPosition() + bullet.dir * bullet.speed * context.deltaTimeSystem.deltaSeconds;
+		const float distanceFromStart = glm::length(bullet.start - position);
+		if (glm::length(bullet.model.getPosition()) > worldRadius + 20.0f || distanceFromStart >= bullet.range)
 		{
 			it = bullets.erase(it);
 			continue;
 		}
-		it++;
+		else
+		{
+			bullet.model.setPosition(position);
+			it++;
+		}
 	}
 }
-void BulletManager::Impl::shoot(const glm::vec3& _pos, const glm::vec3& _dir)
+void BulletManager::Impl::shoot(const glm::vec3& _pos, const glm::vec3& _dir, const float _range, const float _speed, const float _damage)
 {
-	bullets.push_back(std::make_unique<Bullet>(context, _pos, _dir, true));
+	bullets.push_back(std::make_unique<Bullet>(context, _pos, _dir, _range, _speed, _damage, true));
 	BulletCreatePacket packet;
 	packet.position2D.x = _pos.x;
 	packet.position2D.y = _pos.z;
 	packet.direction2D.x = _dir.x;
 	packet.direction2D.y = _dir.z;
+	packet.range = _range;
+	packet.speed = _speed;
+	packet.damage = _damage;
 	context.packetman.sendPacket(PacketType::BulletCreate, packet, false);
 }
 bool BulletManager::Impl::hitTest(const glm::vec3& _pos, float _radius)

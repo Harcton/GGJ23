@@ -132,6 +132,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="MutatorGui.cpp" />
     <ClCompile Include="PacketBroadcaster.cpp" />
     <ClCompile Include="LobbyServer.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -146,6 +147,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="MutatorGui.h" />
     <ClInclude Include="PacketBroadcaster.h" />
     <ClInclude Include="Client.h" />
     <ClInclude Include="LobbyServer.h" />

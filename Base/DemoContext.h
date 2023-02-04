@@ -44,6 +44,7 @@ namespace se
 	}
 }
 
+struct MutationDatabase;
 class MaterialManager;
 class UserSettings;
 
@@ -70,6 +71,7 @@ struct DemoContext
 	se::graphics::ShapeGenerator &shapeGenerator;
 	se::debug::ImmediateModeGraphics &imGraphics;
 
+	MutationDatabase& mutationDatabase;
 	MaterialManager& materialManager;
 	UserSettings& userSettings;
 

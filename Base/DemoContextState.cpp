@@ -2,6 +2,7 @@
 #include "Base/DemoContextState.h"
 
 #include "Base/DefaultResourcePathFinders.h"
+#include "Base/MutationDatabase.h"
 #include "SpehsEngine/Audio/AudioEngine.h"
 #include "SpehsEngine/Audio/AudioManager.h"
 #include "SpehsEngine/Core/DeltaTimeSystem.h"
@@ -170,6 +171,7 @@ struct DemoContextState::Impl
 			modelDataManager,
 			shapeGenerator,
 			imGraphics,
+			mutationDatabase,
 			materialManager,
 			userSettings,
 			guiView,
@@ -200,6 +202,7 @@ struct DemoContextState::Impl
 	se::graphics::ShapeGenerator shapeGenerator;
 	se::debug::ImmediateModeGraphics imGraphics;
 
+	MutationDatabase mutationDatabase;
 	MaterialManager materialManager;
 
 	se::gui::GUIView guiView;

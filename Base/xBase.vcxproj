@@ -132,6 +132,7 @@
     <ClCompile Include="ClientUtility\MaterialManager.cpp" />
     <ClCompile Include="ClientUtility\SoundPlayer.cpp" />
     <ClCompile Include="DemoContextState.cpp" />
+    <ClCompile Include="MutationDatabase.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -150,7 +151,10 @@
     <ClInclude Include="DefaultResourcePathFinders.h" />
     <ClInclude Include="DemoContext.h" />
     <ClInclude Include="DemoContextState.h" />
+    <ClInclude Include="MutationCategory.h" />
+    <ClInclude Include="MutationDatabase.h" />
     <ClInclude Include="Net\Packets.h" />
+    <ClInclude Include="PlayerAttributes.h" />
     <ClInclude Include="PrecompiledInclude.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StrongInt.h" />
