@@ -9,6 +9,7 @@
 #include "SpehsEngine/Graphics/TextureManager.h"
 #include "Base/ClientUtility/MaterialManager.h"
 #include "Client/BulletManager.h"
+#include "glm/gtx/rotate_vector.hpp"
 #pragma optimize("", off)
 using namespace se::graphics;
 
@@ -32,13 +33,30 @@ struct RootServer::Impl
 		}
 	}
 
+	void getChildChainDepth(int& depth, std::vector<Root>& _roots)
+	{
+		if (_roots.size() > 0)
+		{
+			getChildChainDepth(depth, _roots[0].children);
+		}
+		depth++;
+	}
 	bool rootDamageRecursive(std::vector<Root>& _roots, const RootDamagePacket& _packet)
 	{
 		for (size_t i = 0; i < _roots.size(); i++)
 		{
 			if (_roots[i].rootId == _packet.rootId)
 			{
-				_roots[i].health -= _packet.damage;
+				int childChainDepth = -1;
+				getChildChainDepth(childChainDepth, _roots[i].children);
+
+				float baseDamage = _packet.damage;
+				constexpr float rootArmorPiercing = 0.0f;
+				const float childArmorFactor =
+					  (1.0f / (float)pow(2.0f, childChainDepth))
+					* (1.0f - rootArmorPiercing);
+
+				_roots[i].health -= baseDamage * childArmorFactor;
 				if (_roots[i].health <= 0.0f)
 				{
 					std::swap(_roots[i], roots.back());
@@ -128,15 +146,22 @@ struct RootServer::Impl
 	{
 		if (_root.children.empty() && se::time::timeSince(_root.spawnTime) > growthInterval && se::time::timeSince(_root.childTime) > growthInterval)
 		{
-			Root child;
-			child.rootId = nextRootId.value++;
-			child.health = 100.0f;
-			child.start = _root.end;
-			child.end = _root.end + glm::normalize(-_root.end) * rootLength;
-			child.spawnTime = se::time::now();
-			_root.childTime = se::time::now();
-			_root.children.push_back(child);
-			sendRootCreate(child, &_root);
+			const int numRoots = se::rng::weightedCoin(0.25f) ? 2 : 1;
+
+			for (size_t i = 0; i < numRoots; i++)
+			{
+				Root child;
+				child.rootId = nextRootId.value++;
+				child.health = 100.0f;
+				child.start = _root.end;
+				const glm::vec2 dir = glm::rotate(glm::normalize(-child.start),
+					se::rng::random(-se::PI<float> *0.2f, se::PI<float> *0.2f));
+				child.end = child.start + dir * rootLength;
+				child.spawnTime = se::time::now();
+				_root.childTime = se::time::now();
+				_root.children.push_back(child);
+				sendRootCreate(child, &_root);
+			}
 		}
 		for (Root& child : _root.children)
 		{

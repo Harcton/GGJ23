@@ -99,7 +99,6 @@ struct EvilRootManager::Impl
 				head->setMaterial(context.materialManager.createMaterial(DefaultMaterialType::FlatColor));
 				context.scene.add(*head);
 
-
 				auto mat = context.materialManager.createMaterial(DefaultMaterialType::Text);
 				mat->setFont(context.fontManager.getDefaultFont());
 				hpText.setMaterial(mat);
