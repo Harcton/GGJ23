@@ -106,14 +106,16 @@ void BulletManager::Impl::shoot(const glm::vec3& _pos, const glm::vec3& _dir)
 }
 bool BulletManager::Impl::hitTest(const glm::vec3& _pos, float _radius)
 {
-	for (auto it = bullets.begin(); it != bullets.end(); it++)
+	for (auto it = bullets.begin(); it != bullets.end();)
 	{
 		Bullet& bullet = *it->get();
-		if (bullet.owned && glm::distance(_pos, bullet.model.getPosition()) < (_radius + 0.5f))
+		if (glm::distance(_pos, bullet.model.getPosition()) < (_radius + 0.5f))
 		{
-			bullets.erase(it);
-			return true;
+			it = bullets.erase(it);
+			// delete remote bullets on impact, but return true for own bullets only
+			return bullet.owned;
 		}
+		it++;
 	}
 	return false;
 }

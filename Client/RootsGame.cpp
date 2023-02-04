@@ -120,7 +120,7 @@ RootsGame::Impl::Impl(ClientContext& _context)
 
 		core.generate(ShapeType::Sphere, ShapeParameters{}, &context.shapeGenerator);
 		core.setMaterial(material);
-		core.setScale(glm::vec3{ 10.0f });
+		core.setScale(glm::vec3{ constants::coreSize });
 		context.scene.add(core);
 	}
 }
