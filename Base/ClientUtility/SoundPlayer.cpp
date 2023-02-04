@@ -29,14 +29,22 @@ std::shared_ptr<AudioResource> SoundPlayer::getResource(std::string_view _audioF
 
 void SoundPlayer::init()
 {
+	sfxBus = std::make_unique<Bus>();
+	sfxBus->connect(audioEngine.getMasterBus());
+
 	musicBus = std::make_unique<Bus>();
 	musicBus->connect(audioEngine.getMasterBus());
+
+	audioEngine.setDefaultDistanceAttenuation(se::audio::DistanceAttenuation::Exponential);
+	audioEngine.setDefaultAttenuationMinDistance(25.0f);
+	audioEngine.setDefaultAttenuationMaxDistance(250.0f);
+	audioEngine.setDefaultAttenuationRolloffFactor(1.2f);
 }
 void SoundPlayer::update()
 {
 	for (auto it = sources.begin(); it != sources.end();)
 	{
-		if (!it->second->isPlaying() && !it->second->isPaused())
+		if (!it->second->isPlaying())
 		{
 			it = sources.erase(it);
 		}
@@ -54,6 +62,10 @@ float SoundPlayer::getMusicVolume() const
 {
 	return musicBus->getVolume();
 }
+float SoundPlayer::getSfxVolume() const
+{
+	return sfxBus->getVolume();
+}
 void SoundPlayer::setMasterVolume(float _value)
 {
 	audioEngine.getMasterBus().setVolume(_value);
@@ -61,6 +73,10 @@ void SoundPlayer::setMasterVolume(float _value)
 void SoundPlayer::setMusicVolume(float _value)
 {
 	musicBus->setVolume(_value);
+}
+void SoundPlayer::setSfxVolume(float _value)
+{
+	sfxBus->setVolume(_value);
 }
 
 SoundId SoundPlayer::playMusic(std::string_view _audioFile, se::time::Time _fade, int _layer)
@@ -102,13 +118,20 @@ SoundId SoundPlayer::playMusic(std::string_view _audioFile, se::time::Time _fade
 }
 SoundId SoundPlayer::playSound(std::string_view _audioFile, const glm::vec3& _position)
 {
+	if (glm::distance(audioEngine.getListenerPosition(), _position) > 250.0f)
+		return {};
 	auto resource = getResource(_audioFile);
 	auto& source = sources[++soundId];
 	source = std::make_unique<AudioSource>();
 	source->setResource(resource);
 	source->setPosition(_position);
-	source->setOutput(audioEngine.getMasterBus());
-	source->play();
+	source->setOutput(*sfxBus);
+
+	// NOTE: Fading in everything, because of some clipping or audio engine glitching orwhatever...
+	source->setVolume(0.0f);
+	source->playClocked(se::time::now());
+	source->setVolume(1.0f, se::time::fromSeconds(0.01f));
+
 	return soundId;
 }
 void SoundPlayer::stopSound(SoundId _id)

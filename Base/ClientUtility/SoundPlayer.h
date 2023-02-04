@@ -24,8 +24,10 @@ public:
 	void update();
 	float getMasterVolume() const;
 	float getMusicVolume() const;
+	float getSfxVolume() const;
 	void setMasterVolume(float _value);
 	void setMusicVolume(float _value);
+	void setSfxVolume(float _value);
 
 	SoundId playMusic(std::string_view _audioFile, se::time::Time _fade = se::time::Time::zero, int _layer = 0);
 	SoundId playSound(std::string_view _audioFile, const glm::vec3& _position);
@@ -44,4 +46,5 @@ private:
 	std::unordered_map<SoundId, std::unique_ptr<se::audio::AudioSource>> sources;
 	std::unordered_map<int, SoundId> musicSources;
 	std::unique_ptr<se::audio::Bus> musicBus;
+	std::unique_ptr<se::audio::Bus> sfxBus;
 };
