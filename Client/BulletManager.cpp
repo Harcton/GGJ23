@@ -34,7 +34,7 @@ struct BulletManager::Impl
 			: start(_pos), dir(_dir), owned(_owned), range(_range), speed(_speed), damage(_damage), rootStrain(_rootStrain)
 		{
 			model.generate(ShapeType::Ball, ShapeParameters{}, &_context.shapeGenerator);
-			model.setPosition(start);
+			model.setPosition(start + glm::vec3{ 0.0f, 2.5f, 0.0f });
 			model.setScale(glm::vec3{ 0.5f });
 			model.setMaterial(_context.materialManager.createMaterial(DefaultMaterialType::FlatColor));
 			model.setColor(se::Color(toColor(_rootStrain)));
@@ -80,9 +80,8 @@ BulletManager::Impl::Impl(ClientContext& _context, float _worldSize)
 	_context.packetman.registerReceiveHandler<BulletCreatePacket>(PacketType::BulletCreate, scopedConnections.add(),
 		[this](BulletCreatePacket& _packet, const bool _reliable)
 		{
-			const float height = 2.42f;
-			const glm::vec3 position3D(_packet.position2D.x, height, _packet.position2D.y);
-			const glm::vec3 direction3D(_packet.direction2D.x, 0.0f, _packet.direction2D.y);
+			const glm::vec3 position3D = toVec3(_packet.position2D);
+			const glm::vec3 direction3D = toVec3(_packet.direction2D);
 			bullets.push_back(std::make_unique<Bullet>(context, position3D, direction3D, _packet.range, _packet.speed, _packet.damage, _packet.rootStrain, false));
 			context.soundPlayer.playSound("gunfire1.ogg", position3D);
 		});

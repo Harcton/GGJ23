@@ -46,7 +46,7 @@ struct RootsGame::Impl
 	EvilRootManager rootManager;
 
 	Shape ground;
-	Shape core;
+	Model core;
 
 	AmbientLight ambientLight;
 	DirectionalLight sunLight;
@@ -64,7 +64,7 @@ void RootsGame::update()
 RootsGame::Impl::Impl(ClientContext& _context)
 	: context(_context)
 	, ambientLight(se::Color{}, 1.0f)
-	, sunLight(se::Color{}, 1.0f, glm::vec3{ 1.0f, 2.0f, 1.0f })
+	, sunLight(se::Color{}, 1.0f, glm::vec3{ 1.0f, 5.0f, 1.0f })
 	, bulletManager(_context, constants::worldSize)
 	, rootManager(_context, bulletManager, constants::worldSize)
 	, player(_context, bulletManager)
@@ -118,9 +118,9 @@ RootsGame::Impl::Impl(ClientContext& _context)
 		material->setTexture(context.textureManager.find("white_color"), PhongTextureType::Color);
 		material->setTexture(context.textureManager.find("flat_normal"), PhongTextureType::Normal);
 
-		core.generate(ShapeType::Sphere, ShapeParameters{}, &context.shapeGenerator);
+		core.loadModelData(context.modelDataManager.create("core", "Base_Structure.fbx"));
 		core.setMaterial(material);
-		core.setScale(glm::vec3{ constants::coreSize });
+		//core.setScale(glm::vec3{ constants::coreSize });
 		context.scene.add(core);
 	}
 
