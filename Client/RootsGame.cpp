@@ -123,6 +123,8 @@ RootsGame::Impl::Impl(ClientContext& _context)
 		core.setScale(glm::vec3{ constants::coreSize });
 		context.scene.add(core);
 	}
+
+	context.soundPlayer.playMusic("main_theme_root_bgm.ogg", se::time::fromSeconds(2.0f));
 }
 void RootsGame::Impl::update()
 {
