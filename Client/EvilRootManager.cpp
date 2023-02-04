@@ -31,8 +31,10 @@ struct EvilRootManager::Impl
 
 	struct EvilRootVisuals
 	{
-		EvilRootVisuals(ClientContext& _context, RootCreatePacket& _packet)
+		EvilRootVisuals(ClientContext& _context, RootCreatePacket& _packet,
+						BulletManager& _bulletManager)
 			: context(_context)
+			, bulletManager(_bulletManager)
 			, id(_packet.rootId)
 			, startPoint(toVec3(_packet.start))
 			, endPoint(toVec3(_packet.end))
@@ -46,6 +48,36 @@ struct EvilRootManager::Impl
 			root.setColor(se::Color(se::SaddleBrown));
 			root.setMaterial(context.materialManager.createMaterial(DefaultMaterialType::FlatColor));
 			context.scene.add(root);
+		}
+		void findAndAdd(RootCreatePacket& _packet)
+		{
+			if (id == _packet.parentRootId)
+			{
+				branches.push_back(std::make_unique<EvilRootVisuals>(context, _packet, bulletManager));
+			}
+			else
+			{
+				for (auto&& branch : branches)
+				{
+					branch->findAndAdd(_packet);
+				}
+			}
+		}
+		void findAndDelete(RootRemovePacket& _packet)
+		{
+			se_assert(_packet.rootId != id);
+			for (size_t i = 0; i < branches.size(); i++)
+			{
+				if (branches[i]->id == _packet.rootId)
+				{
+					branches.erase(branches.begin() + i);
+					return;
+				}
+			}
+			for (auto&& branch : branches)
+			{
+				branch->findAndDelete(_packet);
+			}
 		}
 		void update()
 		{
@@ -73,16 +105,43 @@ struct EvilRootManager::Impl
 				hpText.setPosition(endPoint + glm::vec3{ 0.0f, 5.0f, 0.0f });
 				context.scene.add(hpText);
 			}
+
+			if (head.has_value() && bulletManager.hitTest(endPoint, headRadius))
+			{
+				constexpr float defaultDamage = 10.0f;
+				sendRootDamage(id, defaultDamage);
+			}
+
+			for (auto&& branch : branches)
+			{
+				branch->update();
+			}
 		}
-		void update(RootUpdatePacket& packet)
+		void update(RootUpdatePacket& _packet)
 		{
-			se_assert(id == packet.rootId);
-			health = packet.health;
-			hpText.clear();
-			hpText.insert(std::to_string((int)health));
+			if (id == _packet.rootId)
+			{
+				health = _packet.health;
+				hpText.clear();
+				hpText.insert(std::to_string((int)health));
+				return;
+			}
+			for (auto&& branch : branches)
+			{
+				branch->update(_packet);
+			}
+		}
+
+		void sendRootDamage(const RootId _rootId, const float _damage)
+		{
+			RootDamagePacket packet;
+			packet.rootId = _rootId;
+			packet.damage = _damage;
+			context.packetman.sendPacket<RootDamagePacket>(PacketType::RootDamage, packet, true);
 		}
 
 		ClientContext& context;
+		BulletManager& bulletManager;
 		const RootId id;
 		const glm::vec3 startPoint;
 		const glm::vec3 endPoint;
@@ -92,15 +151,9 @@ struct EvilRootManager::Impl
 		std::optional<Shape> head;
 		Text hpText;
 		float health = 0.0f;
-	};
 
-	void sendRootDamage(const RootId _rootId, const float _damage)
-	{
-		RootDamagePacket packet;
-		packet.rootId = _rootId;
-		packet.damage = _damage;
-		context.packetman.sendPacket<RootDamagePacket>(PacketType::RootDamage, packet, true);
-	}
+		std::vector<std::unique_ptr<EvilRootVisuals>> branches;
+	};
 
 	std::vector<std::unique_ptr<EvilRootVisuals>> rootData;
 	se::time::Time lastSpawned = se::time::Time::zero;
@@ -125,7 +178,17 @@ EvilRootManager::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 		PacketType::RootCreate, scopedConnections.add(),
 		[this](RootCreatePacket& _packet, const bool _reliable)
 		{
-			rootData.push_back(std::make_unique<EvilRootVisuals>(context, _packet));
+			if (_packet.parentRootId == RootId{})
+			{
+				rootData.push_back(std::make_unique<EvilRootVisuals>(context, _packet, bulletManager));
+			}
+			else
+			{
+				for (auto&& root : rootData)
+				{
+					root->findAndAdd(_packet);
+				}
+			}
 		});
 
 	context.packetman.registerReceiveHandler<RootUpdatePacket>(
@@ -134,11 +197,7 @@ EvilRootManager::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 		{
 			for (auto&& root : rootData)
 			{
-				if (root->id == _packet.rootId)
-				{
-					root->update(_packet);
-					break;
-				}
+				root->update(_packet);
 			}
 		});
 
@@ -151,8 +210,12 @@ EvilRootManager::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 				if (rootData[i]->id == _packet.rootId)
 				{
 					rootData.erase(rootData.begin() + i);
-					break;
+					return;
 				}
+			}
+			for (auto&& root : rootData)
+			{
+				root->findAndDelete(_packet);
 			}
 		});
 }
@@ -161,10 +224,5 @@ void EvilRootManager::Impl::update()
 	for (auto&& root : rootData)
 	{
 		root->update();
-		if (root->head.has_value() && bulletManager.hitTest(root->endPoint, headRadius))
-		{
-			constexpr float defaultDamage = 10.0f;
-			sendRootDamage(root->id, defaultDamage);
-		}
 	}
 }
