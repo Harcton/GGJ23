@@ -79,10 +79,21 @@ RootsGame::Impl::Impl(DemoContext& _context)
 	observerWindow.setName("Debug Overview");
 	observerWindow.setX(50);
 	observerWindow.setY(50);
-	context.renderer.add(observerWindow);
 	observerWindow.add(observerView);
 	observerCamera.setPosition(glm::vec3{ 0.0f, 500.0f, -150.0f });
 	observerCamera.setDirection(glm::normalize(-observerCamera.getPosition()));
+	context.userSettings.connectToEnableDebugOverviewWindowChangedSignal(connections.add(),
+		[this](const bool&, const bool& newValue)
+		{
+			if (newValue)
+			{
+				context.renderer.add(observerWindow);
+			}
+			else
+			{
+				context.renderer.remove(observerWindow);
+			}
+		}, true);
 
 	{
 		ShapeParameters params;
