@@ -24,6 +24,7 @@
 #include "SpehsEngine/Input/EventSignaler.h"
 #include "SpehsEngine/Input/InputManager.h"
 #include "Base/ClientUtility/MaterialManager.h"
+#include "Base/ClientUtility/SoundPlayer.h"
 #include "Base/UserSettings.h"
 #pragma optimize("", off)
 
@@ -39,6 +40,7 @@ struct DemoContextState::Impl
 		, imguiBackend(eventSignaler, 0, renderer)
 		, imGraphics(view, shaderManager, textureManager, fontManager, modelDataManager, shapeGenerator)
 		, materialManager(shaderManager, textureManager)
+		, soundPlayer(audioManager, audioEngine)
 	{
 		se::time::ScopeTimer initTimer;
 
@@ -71,6 +73,7 @@ struct DemoContextState::Impl
 		ImGfx::init(imGraphics);
 
 		materialManager.init();
+		soundPlayer.init();
 
 
 		///////////////
@@ -172,6 +175,7 @@ struct DemoContextState::Impl
 			imGraphics,
 			materialManager,
 			userSettings,
+			soundPlayer,
 			guiView,
 			imguiBackend,
 			audioEngine,
@@ -201,6 +205,7 @@ struct DemoContextState::Impl
 	se::debug::ImmediateModeGraphics imGraphics;
 
 	MaterialManager materialManager;
+	SoundPlayer soundPlayer;
 
 	se::gui::GUIView guiView;
 

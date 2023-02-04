@@ -9,6 +9,7 @@
 #include "SpehsEngine/Graphics/FontManager.h"
 #include "SpehsEngine/Graphics/TextureManager.h"
 #include "Base/ClientUtility/MaterialManager.h"
+#include "Base/ClientUtility/SoundPlayer.h"
 #include "Base/Net/Packets.h"
 #include "Client/BulletManager.h"
 
@@ -53,6 +54,7 @@ struct EvilRootManager::Impl
 		{
 			if (id == _packet.parentRootId)
 			{
+				context.soundPlayer.playSound("root_grow.ogg", toVec3(_packet.start));
 				branches.push_back(std::make_unique<EvilRootVisuals>(context, _packet, bulletManager));
 			}
 			else
@@ -70,6 +72,7 @@ struct EvilRootManager::Impl
 			{
 				if (branches[i]->id == _packet.rootId)
 				{
+					context.soundPlayer.playSound("cracking.ogg", branches[i]->endPoint);
 					branches.erase(branches.begin() + i);
 					return;
 				}
@@ -180,6 +183,7 @@ EvilRootManager::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 		{
 			if (_packet.parentRootId == RootId{})
 			{
+				context.soundPlayer.playSound("root_grow.ogg", toVec3(_packet.start));
 				rootData.push_back(std::make_unique<EvilRootVisuals>(context, _packet, bulletManager));
 			}
 			else
@@ -209,6 +213,7 @@ EvilRootManager::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 			{
 				if (rootData[i]->id == _packet.rootId)
 				{
+					context.soundPlayer.playSound("cracking.ogg", rootData[i]->endPoint);
 					rootData.erase(rootData.begin() + i);
 					return;
 				}

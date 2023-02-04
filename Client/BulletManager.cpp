@@ -9,6 +9,7 @@
 #include "SpehsEngine/Graphics/TextureManager.h"
 #include "SpehsEngine/Input/EventSignaler.h"
 #include "Base/ClientUtility/MaterialManager.h"
+#include "Base/ClientUtility/SoundPlayer.h"
 #include "Base/Net/Packets.h"
 
 using namespace se::graphics;
@@ -77,6 +78,7 @@ BulletManager::Impl::Impl(ClientContext& _context, float _worldSize)
 			const glm::vec3 position3D(_packet.position2D.x, height, _packet.position2D.y);
 			const glm::vec3 direction3D(_packet.direction2D.x, 0.0f, _packet.direction2D.y);
 			bullets.push_back(std::make_unique<Bullet>(context, position3D, direction3D, false));
+			context.soundPlayer.playSound("gunfire1.ogg", position3D);
 		});
 }
 void BulletManager::Impl::update()
@@ -97,6 +99,8 @@ void BulletManager::Impl::update()
 void BulletManager::Impl::shoot(const glm::vec3& _pos, const glm::vec3& _dir)
 {
 	bullets.push_back(std::make_unique<Bullet>(context, _pos, _dir, true));
+	context.soundPlayer.playSound("gunfire1.ogg", _pos);
+
 	BulletCreatePacket packet;
 	packet.position2D.x = _pos.x;
 	packet.position2D.y = _pos.z;
@@ -112,6 +116,7 @@ bool BulletManager::Impl::hitTest(const glm::vec3& _pos, float _radius)
 		if (glm::distance(_pos, bullet.model.getPosition()) < (_radius + 0.5f))
 		{
 			it = bullets.erase(it);
+			context.soundPlayer.playSound("gunhit.ogg", _pos);
 			// delete remote bullets on impact, but return true for own bullets only
 			return bullet.owned;
 		}

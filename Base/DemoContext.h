@@ -46,6 +46,7 @@ namespace se
 
 class MaterialManager;
 class UserSettings;
+class SoundPlayer;
 
 
 struct DemoContext
@@ -72,6 +73,7 @@ struct DemoContext
 
 	MaterialManager& materialManager;
 	UserSettings& userSettings;
+	SoundPlayer& soundPlayer;
 
 	// GUI
 	se::gui::GUIView& guiView;
