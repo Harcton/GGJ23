@@ -109,7 +109,7 @@ bool BulletManager::Impl::hitTest(const glm::vec3& _pos, float _radius)
 	for (auto it = bullets.begin(); it != bullets.end(); it++)
 	{
 		Bullet& bullet = *it->get();
-		if (glm::distance(_pos, bullet.model.getPosition()) < (_radius + 0.5f))
+		if (bullet.owned && glm::distance(_pos, bullet.model.getPosition()) < (_radius + 0.5f))
 		{
 			bullets.erase(it);
 			return true;
