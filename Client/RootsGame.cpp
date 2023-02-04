@@ -61,14 +61,12 @@ void RootsGame::update()
 }
 
 
-constexpr float worldSize = 500.0f;
-
 RootsGame::Impl::Impl(ClientContext& _context)
 	: context(_context)
 	, ambientLight(se::Color{}, 1.0f)
 	, sunLight(se::Color{}, 1.0f, glm::vec3{ 1.0f, 2.0f, 1.0f })
-	, bulletManager(_context, worldSize)
-	, rootManager(_context, bulletManager, worldSize)
+	, bulletManager(_context, constants::worldSize)
+	, rootManager(_context, bulletManager, constants::worldSize)
 	, player(_context, bulletManager)
 	, observerView(_context.scene, observerCamera)
 {
@@ -112,7 +110,7 @@ RootsGame::Impl::Impl(ClientContext& _context)
 
 		ground.generate(ShapeType::Circle, params, &context.shapeGenerator);
 		ground.setMaterial(material);
-		ground.setScale(glm::vec3{ worldSize });
+		ground.setScale(glm::vec3{ constants::worldSize });
 		context.scene.add(ground);
 	}
 	{

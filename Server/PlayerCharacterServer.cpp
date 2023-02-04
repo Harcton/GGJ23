@@ -56,3 +56,8 @@ void PlayerCharacterServer::update()
 {
 	impl->update();
 }
+
+const std::unordered_map<ClientId, PlayerUpdatePacket>& PlayerCharacterServer::getPlayerUpdatePackets() const
+{
+	return impl->playerUpdatePackets;
+}

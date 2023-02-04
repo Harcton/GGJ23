@@ -145,6 +145,7 @@
     <ClInclude Include="ClientUtility\CameraController.h" />
     <ClInclude Include="ClientUtility\MaterialManager.h" />
     <ClInclude Include="ClientUtility\SoundPlayer.h" />
+    <ClInclude Include="Constants.h" />
     <ClInclude Include="DefaultResourcePathFinders.h" />
     <ClInclude Include="DemoContext.h" />
     <ClInclude Include="DemoContextState.h" />

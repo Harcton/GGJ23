@@ -4,6 +4,7 @@
 #include "SpehsEngine/ImGui/Utility/ImGuiUtility.h"
 #include "SpehsEngine/Net/Packetman.h"
 #include "Base/StrongInt.h"
+#include "Base/Constants.h"
 #include "Base/DemoContext.h"
 #include "Base/UserSettings.h"
 

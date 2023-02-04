@@ -15,6 +15,7 @@
 #include "Server/LobbyServer.h"
 #include "Server/PacketBroadcaster.h"
 #include "Server/PlayerCharacterServer.h"
+#include "Server/RadarGui.h"
 
 
 int main()
@@ -72,12 +73,14 @@ int main()
 	};
 	PacketBroadcaster packetBroadcaster(serverContext);
 	PlayerCharacterServer playerCharacterServer(serverContext);
+	RadarGui radarGui(serverContext, playerCharacterServer);
 	while (true)
 	{
 		SE_SCOPE_PROFILER("Frame");
 		const se::time::ScopedFrameLimiter frameLimiter(minFrameTime);
 
 		connectionManager.update();
+		radarGui.update();
 		playerCharacterServer.update();
 		if (!demoContextState.update())
 		{
