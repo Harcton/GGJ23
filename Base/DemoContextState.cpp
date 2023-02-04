@@ -34,7 +34,7 @@ struct DemoContextState::Impl
 
 	Impl(const std::string_view _windowName)
 		: mainWindow(true)
-		, renderer(mainWindow, se::graphics::RendererFlag::VSync | se::graphics::RendererFlag::MSAA4, se::graphics::RendererBackend::Direct3D11)
+		, renderer(mainWindow, se::graphics::RendererFlag::VSync /*| se::graphics::RendererFlag::MSAA4*/, se::graphics::RendererBackend::Direct3D11)
 		, userSettings(_windowName)
 		, view(scene, camera)
 		, guiView(shaderManager, textureManager, fontManager, eventSignaler, 9001)
@@ -141,6 +141,8 @@ struct DemoContextState::Impl
 		audioEngine.setListenerUp(camera.getUp());
 		audioEngine.update();
 
+		soundPlayer.update();
+
 		eventCatcher.pollEvents();
 		inputManager.update(eventCatcher);
 		eventSignaler.signalEvents(eventCatcher);
@@ -206,10 +208,6 @@ struct DemoContextState::Impl
 	se::graphics::ShapeGenerator shapeGenerator;
 	se::debug::ImmediateModeGraphics imGraphics;
 
-	MutationDatabase mutationDatabase;
-	MaterialManager materialManager;
-	SoundPlayer soundPlayer;
-
 	se::gui::GUIView guiView;
 
 	// ImGui
@@ -219,7 +217,16 @@ struct DemoContextState::Impl
 	se::audio::AudioEngine audioEngine;
 	se::audio::AudioManager audioManager;
 
+
+	// GAME:
+
+
 	se::ScopedConnections scopedConnections;
+
+	MutationDatabase mutationDatabase;
+
+	MaterialManager materialManager;
+	SoundPlayer soundPlayer;
 };
 
 DemoContextState::DemoContextState(const std::string_view _windowName)
