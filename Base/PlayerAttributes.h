@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Base/RootStrain.h"
+
 
 struct PlayerAttributes
 {
@@ -10,4 +12,5 @@ struct PlayerAttributes
 	float weaponVelocity = 100.0f;
 	float weaponSpread = 0.0f; // Radians, used only if shot size is greater than 1
 	uint8_t weaponShotSize = 1;
+	RootStrain rootStrainLoadout = RootStrain::Blue;
 };

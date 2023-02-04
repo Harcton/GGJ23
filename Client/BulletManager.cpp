@@ -21,7 +21,7 @@ struct BulletManager::Impl
 	~Impl() = default;
 	Impl(ClientContext& _context, float _worldSize);
 	void update();
-	void shoot(const glm::vec3& _pos, const glm::vec3& _dir, const float _range, const float _speed, const float _damage);
+	void shoot(const glm::vec3& _pos, const glm::vec3& _dir, const float _range, const float _speed, const float _damage, const RootStrain _rootStrain);
 	bool hitTest(const glm::vec3& _pos, float _radius);
 
 	ClientContext& context;
@@ -29,14 +29,15 @@ struct BulletManager::Impl
 
 	struct Bullet
 	{
-		Bullet(ClientContext& _context, const glm::vec3& _pos, const glm::vec3& _dir, const float _range, const float _speed, const float _damage, const bool _owned)
-			: start(_pos), dir(_dir), owned(_owned), range(_range), speed(_speed), damage(_damage)
+		Bullet(ClientContext& _context, const glm::vec3& _pos, const glm::vec3& _dir, const float _range, const float _speed, const float _damage,
+			const RootStrain _rootStrain, const bool _owned)
+			: start(_pos), dir(_dir), owned(_owned), range(_range), speed(_speed), damage(_damage), rootStrain(_rootStrain)
 		{
 			model.generate(ShapeType::Ball, ShapeParameters{}, &_context.shapeGenerator);
 			model.setPosition(start);
 			model.setScale(glm::vec3{ 0.5f });
 			model.setMaterial(_context.materialManager.createMaterial(DefaultMaterialType::FlatColor));
-			model.setColor(se::Color(se::Orange));
+			model.setColor(se::Color(toColor(_rootStrain)));
 			_context.scene.add(model);
 		}
 		const glm::vec3 start;
@@ -44,6 +45,7 @@ struct BulletManager::Impl
 		const float range;
 		const float speed;
 		const float damage;
+		const RootStrain rootStrain;
 		const bool owned;
 		Shape model;
 	};
@@ -61,9 +63,9 @@ void BulletManager::update()
 {
 	impl->update();
 }
-void BulletManager::shoot(const glm::vec3& _pos, const glm::vec3& _dir, const float _range, const float _speed, const float _damage)
+void BulletManager::shoot(const glm::vec3& _pos, const glm::vec3& _dir, const float _range, const float _speed, const float _damage, const RootStrain _rootStrain)
 {
-	impl->shoot(_pos, _dir, _range, _speed, _damage);
+	impl->shoot(_pos, _dir, _range, _speed, _damage, _rootStrain);
 }
 bool BulletManager::hitTest(const glm::vec3& _pos, float _radius)
 {
@@ -81,7 +83,7 @@ BulletManager::Impl::Impl(ClientContext& _context, float _worldSize)
 			const float height = 2.42f;
 			const glm::vec3 position3D(_packet.position2D.x, height, _packet.position2D.y);
 			const glm::vec3 direction3D(_packet.direction2D.x, 0.0f, _packet.direction2D.y);
-			bullets.push_back(std::make_unique<Bullet>(context, position3D, direction3D, _packet.range, _packet.speed, _packet.damage, false));
+			bullets.push_back(std::make_unique<Bullet>(context, position3D, direction3D, _packet.range, _packet.speed, _packet.damage, _packet.rootStrain, false));
 			context.soundPlayer.playSound("gunfire1.ogg", position3D);
 		});
 }
@@ -104,9 +106,9 @@ void BulletManager::Impl::update()
 		}
 	}
 }
-void BulletManager::Impl::shoot(const glm::vec3& _pos, const glm::vec3& _dir, const float _range, const float _speed, const float _damage)
+void BulletManager::Impl::shoot(const glm::vec3& _pos, const glm::vec3& _dir, const float _range, const float _speed, const float _damage, const RootStrain _rootStrain)
 {
-	bullets.push_back(std::make_unique<Bullet>(context, _pos, _dir, _range, _speed, _damage, true));
+	bullets.push_back(std::make_unique<Bullet>(context, _pos, _dir, _range, _speed, _damage, _rootStrain, true));
 	context.soundPlayer.playSound("gunfire1.ogg", _pos);
 	BulletCreatePacket packet;
 	packet.position2D.x = _pos.x;
@@ -116,6 +118,7 @@ void BulletManager::Impl::shoot(const glm::vec3& _pos, const glm::vec3& _dir, co
 	packet.range = _range;
 	packet.speed = _speed;
 	packet.damage = _damage;
+	packet.rootStrain = _rootStrain;
 	context.packetman.sendPacket(PacketType::BulletCreate, packet, false);
 }
 bool BulletManager::Impl::hitTest(const glm::vec3& _pos, float _radius)

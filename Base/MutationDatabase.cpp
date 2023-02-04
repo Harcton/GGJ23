@@ -21,6 +21,19 @@ MutationDatabase::MutationDatabase()
 		mutation->function = _function;
 		mutation->mutationCategory = _mutationCategory;
 	};
+	auto addLoadout = [&](const std::string_view _name, const RootStrain _rootStrain)
+	{
+		const MutationId mutationId = nextMutationId.value++;
+		std::unique_ptr<Mutation>& mutation = lookup[mutationId];
+		se_assert(!mutation);
+		mutation.reset(new Mutation());
+		mutation->mutationId = mutationId;
+		mutation->maxStacks = 1;
+		mutation->name = _name;
+		mutation->function = [](PlayerAttributes&, const uint16_t) {};
+		mutation->mutationCategory = MutationCategory::Loadout;
+		mutation->rootStrain.emplace(_rootStrain);
+	};
 
 	addMutation("Minor speed buff", 5, MutationCategory::Default,
 		[&](PlayerAttributes& playerAttributes, const uint16_t stacks)
@@ -40,6 +53,22 @@ MutationDatabase::MutationDatabase()
 			playerAttributes.weaponShotSize += stacks;
 			playerAttributes.weaponSpread += se::PI<float> * 0.05f * float(stacks);
 		});
+
+	addMutation("loadout", 10, MutationCategory::Default,
+		[&](PlayerAttributes& playerAttributes, const uint16_t stacks)
+		{
+			playerAttributes.weaponShotSize += stacks;
+			playerAttributes.weaponSpread += se::PI<float> *0.05f * float(stacks);
+		});
+
+	addLoadout("#4B6F44 - Ultra-Green",		RootStrain::Green);
+	addLoadout("#2E5894 - Ultra-Blue",		RootStrain::Blue);
+	addLoadout("#8806CE - Ultra-Violet",	RootStrain::Violet);
+	addLoadout("#CE2029 - Ultra-Red",		RootStrain::Red);
+	addLoadout("#FD6C9E - Ultra-Pink",		RootStrain::Pink);
+	addLoadout("#FFEF00 - Ultra-Yellow",	RootStrain::Yellow);
+	addLoadout("#9EFD38 - Ultra-Lime",		RootStrain::Lime);
+	addLoadout("#00FFFF - Ultra-Cyan",		RootStrain::Cyan);
 
 	vector.reserve(lookup.size());
 	for (const std::pair<const MutationId, std::unique_ptr<Mutation>>& pair : lookup)

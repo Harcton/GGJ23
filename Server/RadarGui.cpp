@@ -123,6 +123,7 @@ struct RadarGui::Impl
 		GUIShape& shape = rootShape.addChild<GUIShape>();
 		shape.setPosition(guiCenter);
 		shape.setSize(size);
+		shape.setColor(toColor(_root.rootStrain));
 		rootShapes[_root.rootId] = &shape;
 		return shape;
 	}

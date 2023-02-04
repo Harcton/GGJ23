@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base/Net/Packets.h"
+#include "Base/RootStrain.h"
 
 namespace se
 {
@@ -18,6 +19,8 @@ struct Client
 	{
 	}
 	ClientId clientId;
+	se::Color color;
+	RootStrain rootStrainLoadout = RootStrain::Blue;
 	std::string name;
 	std::shared_ptr<se::net::Connection2> connection;
 	se::net::Packetman<PacketType> packetman;
