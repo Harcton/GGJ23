@@ -73,9 +73,9 @@ BulletManager::Impl::Impl(ClientContext& _context, float _worldSize)
 	_context.packetman.registerReceiveHandler<BulletCreatePacket>(PacketType::BulletCreate, scopedConnections.add(),
 		[this](BulletCreatePacket& _packet, const bool _reliable)
 		{
-			const float height = 0.0f;
+			const float height = 2.42f;
 			const glm::vec3 position3D(_packet.position2D.x, height, _packet.position2D.y);
-			const glm::vec3 direction3D(_packet.direction2D.x, height, _packet.direction2D.y);
+			const glm::vec3 direction3D(_packet.direction2D.x, 0.0f, _packet.direction2D.y);
 			bullets.push_back(std::make_unique<Bullet>(context, position3D, direction3D, false));
 		});
 }
