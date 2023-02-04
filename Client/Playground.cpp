@@ -35,7 +35,6 @@ private:
 	se::ScopedConnections connections;
 	glm::vec3 movement{};
 	std::optional<SoundId> boingSoundId;
-	SoundPlayer soundPlayer;
 	CameraController cameraController;
 	Model frog;
 	AmbientLight ambientLight;
@@ -61,7 +60,6 @@ Playground::Impl::~Impl()
 }
 Playground::Impl::Impl(ClientContext& _context)
 	: context(_context)
-	, soundPlayer(_context)
 	, ambientLight(se::Color{}, 0.5f)
 	, sunLight(se::Color{}, 0.5f, glm::vec3{1.0f, 2.0f, 1.0f})
 	, cameraController(_context, inputPriority + 1)
@@ -130,7 +128,7 @@ Playground::Impl::Impl(ClientContext& _context)
 			return false;
 		}, inputPriority);
 
-	soundPlayer.playMusic("chill.ogg", se::time::fromSeconds(2.0));
+	context.soundPlayer.playMusic("chill.ogg", se::time::fromSeconds(2.0));
 }
 void Playground::Impl::update()
 {
@@ -150,17 +148,17 @@ void Playground::Impl::update()
 	{
 		if (!boingSoundId.has_value())
 		{
-			boingSoundId = soundPlayer.playSound("boing.ogg", frog.getPosition());
-			soundPlayer.setSoundLooping(boingSoundId.value(), true);
+			boingSoundId = context.soundPlayer.playSound("boing.ogg", frog.getPosition());
+			context.soundPlayer.setSoundLooping(boingSoundId.value(), true);
 		}
 		else
 		{
-			soundPlayer.setSoundPosition(boingSoundId.value(), frog.getPosition());
+			context.soundPlayer.setSoundPosition(boingSoundId.value(), frog.getPosition());
 		}
 	}
 	else if (!moving && boingSoundId.has_value())
 	{
-		soundPlayer.stopSound(boingSoundId.value());
+		context.soundPlayer.stopSound(boingSoundId.value());
 		boingSoundId.reset();
 	}
 
@@ -185,15 +183,15 @@ void Playground::Impl::update()
 
 	if (ImGui::Begin("Playground"))
 	{
-		float masterVolume = soundPlayer.getMasterVolume();
+		float masterVolume = context.soundPlayer.getMasterVolume();
 		if (ImGui::SliderFloat("Master Volume", &masterVolume, 0.0f, 1.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp))
 		{
-			soundPlayer.setMasterVolume(masterVolume);
+			context.soundPlayer.setMasterVolume(masterVolume);
 		}
-		float musicVolume = soundPlayer.getMusicVolume();
+		float musicVolume = context.soundPlayer.getMusicVolume();
 		if (ImGui::SliderFloat("Music Volume", &musicVolume, 0.0f, 1.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp))
 		{
-			soundPlayer.setMusicVolume(musicVolume);
+			context.soundPlayer.setMusicVolume(musicVolume);
 		}
 	} ImGui::End();
 }

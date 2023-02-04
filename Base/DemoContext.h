@@ -47,6 +47,7 @@ namespace se
 struct MutationDatabase;
 class MaterialManager;
 class UserSettings;
+class SoundPlayer;
 
 
 struct DemoContext
@@ -74,6 +75,7 @@ struct DemoContext
 	MutationDatabase& mutationDatabase;
 	MaterialManager& materialManager;
 	UserSettings& userSettings;
+	SoundPlayer& soundPlayer;
 
 	// GUI
 	se::gui::GUIView& guiView;

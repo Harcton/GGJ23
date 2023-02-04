@@ -14,6 +14,7 @@ enum class PacketType : uint8_t
 	RootUpdate,
 	RootRemove,
 	RootDamage,
+	GameDefeat,
 };
 
 // Client -> server
@@ -227,4 +228,16 @@ struct RootDamagePacket
 	}
 	RootId rootId;
 	float damage = 0.0f;
+};
+
+// Server -> client
+struct GameDefeatPacket
+{
+	void write(se::WriteBuffer& writeBuffer) const
+	{
+	}
+	bool read(se::ReadBuffer& readBuffer)
+	{
+		return true;
+	}
 };

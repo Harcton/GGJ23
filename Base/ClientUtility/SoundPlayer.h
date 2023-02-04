@@ -2,6 +2,8 @@
 
 namespace se::audio
 {
+	class AudioManager;
+	class AudioEngine;
 	class AudioSource;
 	class AudioResource;
 	class Bus;
@@ -15,9 +17,10 @@ class SoundPlayer
 {
 public:
 
-	SoundPlayer(DemoContext& _context);
+	SoundPlayer(se::audio::AudioManager& _audioManager, se::audio::AudioEngine& _audioEngine);
 	~SoundPlayer();
 
+	void init();
 	void update();
 	float getMasterVolume() const;
 	float getMusicVolume() const;
@@ -34,7 +37,8 @@ private:
 
 	std::shared_ptr<se::audio::AudioResource> getResource(std::string_view _audioFile);
 
-	DemoContext& context;
+	se::audio::AudioManager& audioManager;
+	se::audio::AudioEngine& audioEngine;
 
 	SoundId soundId = 0;
 	std::unordered_map<SoundId, std::unique_ptr<se::audio::AudioSource>> sources;

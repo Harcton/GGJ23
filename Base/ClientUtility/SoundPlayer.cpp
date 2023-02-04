@@ -5,32 +5,33 @@
 #include "SpehsEngine/Audio/AudioManager.h"
 #include "SpehsEngine/Audio/AudioResource.h"
 #include "SpehsEngine/Audio/AudioSource.h"
-#include "Base/DemoContext.h"
 
 
 using namespace se::audio;
 
-SoundPlayer::SoundPlayer(DemoContext& _context)
-	: context(_context)
-	, musicBus(std::make_unique<Bus>())
-{
-	musicBus->setVolume(0.65f);
-	musicBus->connect(context.audioEngine.getMasterBus());
-}
+SoundPlayer::SoundPlayer(se::audio::AudioManager& _audioManager, se::audio::AudioEngine& _audioEngine)
+	: audioManager(_audioManager)
+	, audioEngine(_audioEngine)
+{}
 SoundPlayer::~SoundPlayer()
 {}
 
 std::shared_ptr<AudioResource> SoundPlayer::getResource(std::string_view _audioFile)
 {
-	std::shared_ptr<AudioResource> result = context.audioManager.find(_audioFile);
+	std::shared_ptr<AudioResource> result = audioManager.find(_audioFile);
 	if (!result)
 	{
-		result = context.audioManager.load(_audioFile, _audioFile);
+		result = audioManager.load(_audioFile, _audioFile);
 	}
 	result->waitUntilReady(); // :`(
 	return result;
 }
 
+void SoundPlayer::init()
+{
+	musicBus = std::make_unique<Bus>();
+	musicBus->connect(audioEngine.getMasterBus());
+}
 void SoundPlayer::update()
 {
 	for (auto it = sources.begin(); it != sources.end();)
@@ -47,7 +48,7 @@ void SoundPlayer::update()
 }
 float SoundPlayer::getMasterVolume() const
 {
-	return context.audioEngine.getMasterBus().getVolume();
+	return audioEngine.getMasterBus().getVolume();
 }
 float SoundPlayer::getMusicVolume() const
 {
@@ -55,7 +56,7 @@ float SoundPlayer::getMusicVolume() const
 }
 void SoundPlayer::setMasterVolume(float _value)
 {
-	context.audioEngine.getMasterBus().setVolume(_value);
+	audioEngine.getMasterBus().setVolume(_value);
 }
 void SoundPlayer::setMusicVolume(float _value)
 {
@@ -106,7 +107,7 @@ SoundId SoundPlayer::playSound(std::string_view _audioFile, const glm::vec3& _po
 	source = std::make_unique<AudioSource>();
 	source->setResource(resource);
 	source->setPosition(_position);
-	source->setOutput(context.audioEngine.getMasterBus());
+	source->setOutput(audioEngine.getMasterBus());
 	source->play();
 	return soundId;
 }
