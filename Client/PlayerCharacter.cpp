@@ -21,6 +21,7 @@ struct PlayerCharacter::Impl
 	Impl(ClientContext& _context, BulletManager& _bulletManager);
 	~Impl() = default;
 	void update();
+	void initPlayer(Shape& _shape, bool _remote);
 
 	ClientContext& context;
 	BulletManager& bulletManager;
@@ -31,6 +32,8 @@ struct PlayerCharacter::Impl
 	glm::vec3 movement{};
 	glm::vec3 facing{0.0f, 0.0f, -1.0f};
 	se::time::Time lastSendUpdateTime;
+
+	std::unordered_map<ClientId, std::unique_ptr<Shape>> remoteClients;
 };
 
 PlayerCharacter::PlayerCharacter(ClientContext& _context, BulletManager& _bulletManager)
@@ -52,12 +55,8 @@ PlayerCharacter::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 {
 	glm::vec2 playerPos = se::rng::circle(40.0f);
 
-	model.generate(ShapeType::Box, ShapeParameters{}, &context.shapeGenerator);
+	initPlayer(model, false);
 	model.setPosition(glm::vec3{ playerPos.x, 0.0f, playerPos.y });
-	model.setMaterial(context.materialManager.createMaterial(DefaultMaterialType::FlatColor));
-	model.setColor(se::Color(se::BlueViolet));
-	model.setScale(glm::vec3{ 1.5f, 4.0f, 1.5f });
-	context.scene.add(model);
 
 	context.camera.setPosition(model.getPosition() + cameraDistance);
 	context.camera.setDirection(glm::normalize(model.getPosition() - context.camera.getPosition()));
@@ -100,7 +99,37 @@ PlayerCharacter::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 	context.packetman.registerReceiveHandler<PlayerUpdatesPacket>(PacketType::PlayerUpdates, connections.add(),
 		[this](PlayerUpdatesPacket& _packet, const bool _reliable)
 		{
-			se::log::info("Player updates packet received TODO " + std::to_string(_packet.playerUpdatePackets.size()));
+			for (const auto& [id, packet] : _packet.playerUpdatePackets)
+			{
+				if (id == context.myClientId)
+					continue; // no need to sync self... ?
+
+				auto it = remoteClients.find(id);
+				if (it == remoteClients.end())
+				{
+					//se::log::info("New remote client created.");
+					std::unique_ptr<Shape>& shape = remoteClients[id] = std::make_unique<Shape>();
+					initPlayer(*shape, true);
+					shape->setPosition({ packet.position.x, 0.0f, packet.position.y });
+				}
+				else
+				{
+					const glm::vec3 newPos{ packet.position.x, 0.0f, packet.position.y };
+					//se::log::info("remote pos: " + se::toString(id) + " " + se::toString(newPos));
+					const glm::vec3 diff{ newPos - it->second->getPosition() };
+					if (glm::length(diff) > 0.0f)
+					{
+						it->second->setRotation(glm::slerp(
+							it->second->getRotation(),
+							glm::quatLookAt(glm::normalize(diff), glm::vec3{ 0.0f, 1.0f, 0.0f }),
+							0.3f));
+					}
+					it->second->setPosition(glm::mix(
+						it->second->getPosition(),
+						newPos,
+						0.2f));
+				}
+			}
 		});
 }
 void PlayerCharacter::Impl::update()
@@ -138,5 +167,13 @@ void PlayerCharacter::Impl::update()
 		context.packetman.sendPacket(PacketType::PlayerUpdate, packet, false);
 		lastSendUpdateTime = se::time::now();
 	}
+}
+void PlayerCharacter::Impl::initPlayer(Shape& _shape, bool _remote)
+{
+	_shape.generate(ShapeType::Box, ShapeParameters{}, &context.shapeGenerator);
+	_shape.setMaterial(context.materialManager.createMaterial(DefaultMaterialType::FlatColor));
+	_shape.setColor(_remote ? se::Color(se::CadetBlue) : se::Color(se::BlueViolet));
+	_shape.setScale(glm::vec3{ 1.5f, 4.0f, 1.5f });
+	context.scene.add(_shape);
 }
 
