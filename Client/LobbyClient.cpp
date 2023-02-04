@@ -42,7 +42,11 @@ struct LobbyClient::Impl
 					{
 						LobbyReadyPacket packet;
 						packet.ready = ready || context.userSettings.getSkipLobby();
-						packetman->sendPacket(PacketType::LobbyReady, packet, true);
+						if (packet.ready != ready)
+						{
+							ready = packet.ready;
+							packetman->sendPacket(PacketType::LobbyReady, packet, true);
+						}
 					}
 					break;
 				case se::net::Connection2::Status::Disconnected:
