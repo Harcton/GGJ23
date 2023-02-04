@@ -9,14 +9,12 @@
 #include "SpehsEngine/Graphics/TextureManager.h"
 #include "Base/ClientUtility/MaterialManager.h"
 #include "Client/BulletManager.h"
-
+#pragma optimize("", off)
 using namespace se::graphics;
 
 
 constexpr float rootLength = 20.0f;
-constexpr se::time::Time growthTime = se::time::fromSeconds(4.0f);
 constexpr se::time::Time growthInterval = se::time::fromSeconds(15.0f);
-constexpr float headRadius = 5.0f;
 
 struct RootServer::Impl
 {
@@ -92,11 +90,16 @@ struct RootServer::Impl
 			root.start = se::rng::circle(worldRadius);
 			root.end = root.start + glm::normalize(-root.start) * rootLength;
 			root.health = 100.0f;
+			root.spawnTime = se::time::now();
 			roots.push_back(root);
 
 			sendRootCreate(root, nullptr);
 
 			lastSpawnTime = se::time::now();
+		}
+		for (Root& root : roots)
+		{
+			updateRoot(root);
 		}
 		if (se::time::timeSince(lastUpdateTime) > se::time::fromSeconds(1.0f / 5.0f))
 		{
@@ -123,12 +126,15 @@ struct RootServer::Impl
 
 	void updateRoot(Root& _root)
 	{
-		if (_root.children.empty() && se::time::timeSince(_root.spawnTime) > growthInterval)
+		if (_root.children.empty() && se::time::timeSince(_root.spawnTime) > growthInterval && se::time::timeSince(_root.childTime) > growthInterval)
 		{
 			Root child;
 			child.rootId = nextRootId.value++;
+			child.health = 100.0f;
 			child.start = _root.end;
 			child.end = _root.end + glm::normalize(-_root.end) * rootLength;
+			child.spawnTime = se::time::now();
+			_root.childTime = se::time::now();
 			_root.children.push_back(child);
 			sendRootCreate(child, &_root);
 		}
@@ -148,6 +154,25 @@ struct RootServer::Impl
 		for (const std::unique_ptr<Client>& client : context.clients)
 		{
 			client->packetman.sendPacket<RootCreatePacket>(PacketType::RootCreate, packet, true);
+		}
+	}
+
+	void forEachRoot(const std::function<void(const Root&)>& _func)
+	{
+		forEachRoot(_func, roots);
+	}
+
+	void apply(const RootDamagePacket& _packet)
+	{
+		rootDamageRecursive(roots, _packet);
+	}
+
+	void forEachRoot(const std::function<void(const Root&)>& _func, const std::vector<Root>& _roots) const
+	{
+		for (const Root& root : _roots)
+		{
+			_func(root);
+			forEachRoot(_func, root.children);
 		}
 	}
 
@@ -179,4 +204,14 @@ void RootServer::update()
 const std::vector<RootServer::Root>& RootServer::getRoots() const
 {
 	return impl->roots;
+}
+
+void RootServer::apply(const RootDamagePacket& _packet)
+{
+	impl->apply(_packet);
+}
+
+void RootServer::forEachRoot(const std::function<void(const Root&)>& _func)
+{
+	impl->forEachRoot(_func);
 }

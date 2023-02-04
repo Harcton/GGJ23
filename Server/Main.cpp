@@ -75,7 +75,7 @@ int main()
 	PacketBroadcaster packetBroadcaster(serverContext);
 	PlayerCharacterServer playerCharacterServer(serverContext);
 	RootServer rootServer(serverContext, constants::worldSize);
-	RadarGui radarGui(serverContext, playerCharacterServer);
+	RadarGui radarGui(serverContext, playerCharacterServer, rootServer);
 	while (true)
 	{
 		SE_SCOPE_PROFILER("Frame");

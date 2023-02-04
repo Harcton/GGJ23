@@ -1,5 +1,6 @@
 #pragma once
 
+struct RootDamagePacket;
 
 
 class RootServer
@@ -13,6 +14,7 @@ public:
 		glm::vec2 end;
 		float health = 0.0f;
 		se::time::Time spawnTime;
+		se::time::Time childTime;
 		std::vector<Root> children;
 	};
 
@@ -20,6 +22,8 @@ public:
 	~RootServer();
 	void update();
 	const std::vector<Root>& getRoots() const;
+	void apply(const RootDamagePacket& packet);
+	void forEachRoot(const std::function<void(const Root&)>& _func);
 private:
 	struct Impl;
 	std::unique_ptr<Impl> impl;
