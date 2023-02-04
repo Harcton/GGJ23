@@ -39,10 +39,9 @@ int main(const int argc, const char** argv)
 	// Lobby loop
 	std::shared_ptr<se::net::Connection2> connection;
 
-	if (false)
 	{
 		LobbyClient lobbyClient(demoContext, connectionManager, processFilepath);
-		while (true)
+		while (!demoContext.userSettings.getSkipLobby())
 		{
 			SE_SCOPE_PROFILER("Frame");
 			const se::time::ScopedFrameLimiter frameLimiter(minFrameTime);

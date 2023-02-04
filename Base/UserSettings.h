@@ -3,6 +3,7 @@
 #define FOR_EACH_USER_SETTING(p_What) \
 /*p_What(p_Type, p_Name, p_Default)*/ \
 p_What(glm::ivec2, Resolution, glm::ivec2(1280, 720)) \
+p_What(bool, SkipLobby, false) \
 
 
 class UserSettings
