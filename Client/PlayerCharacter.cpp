@@ -21,10 +21,17 @@ using namespace se::graphics;
 
 struct PlayerCharacter::Impl
 {
+	struct PlayerModel
+	{
+		Model modelBottom;
+		Model modelTop;
+	};
+
+
 	Impl(ClientContext& _context, BulletManager& _bulletManager);
 	~Impl() = default;
 	void update();
-	void initPlayer(Shape& _shape, bool _remote);
+	void initPlayer(PlayerModel& _model, bool _remote);
 	void updatePlayerAttributes();
 	void shoot();
 
@@ -32,7 +39,7 @@ struct PlayerCharacter::Impl
 	BulletManager& bulletManager;
 	se::ScopedConnections connections;
 
-	Shape model;
+	PlayerModel model;
 	glm::vec3 input{};
 	glm::vec3 movement{};
 	glm::vec3 facing{0.0f, 0.0f, -1.0f};
@@ -40,7 +47,7 @@ struct PlayerCharacter::Impl
 	PlayerAttributes playerAttributes;
 	se::time::Time lastShootTime;
 
-	std::unordered_map<ClientId, std::unique_ptr<Shape>> remoteClients;
+	std::unordered_map<ClientId, std::unique_ptr<PlayerModel>> remoteClients;
 	std::vector<std::pair<MutationId, uint16_t>> mutations;
 };
 
@@ -64,10 +71,11 @@ PlayerCharacter::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 	glm::vec2 playerPos = se::rng::circle(40.0f);
 
 	initPlayer(model, false);
-	model.setPosition(toVec3(playerPos));
+	model.modelBottom.setPosition(toVec3(playerPos));
+	model.modelTop.setPosition(toVec3(playerPos));
 
-	context.camera.setPosition(model.getPosition() + cameraDistance);
-	context.camera.setDirection(glm::normalize(model.getPosition() - context.camera.getPosition()));
+	context.camera.setPosition(model.modelTop.getPosition() + cameraDistance);
+	context.camera.setDirection(glm::normalize(model.modelTop.getPosition() - context.camera.getPosition()));
 
 	context.eventSignaler.connectToKeyboardSignal(
 		connections.add(),
@@ -114,24 +122,29 @@ PlayerCharacter::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 				if (it == remoteClients.end())
 				{
 					//se::log::info("New remote client created.");
-					std::unique_ptr<Shape>& shape = remoteClients[id] = std::make_unique<Shape>();
-					initPlayer(*shape, true);
-					shape->setPosition({ packet.position.x, 0.0f, packet.position.y });
+					std::unique_ptr<PlayerModel>& remoteModel = remoteClients[id] = std::make_unique<PlayerModel>();
+					initPlayer(*remoteModel, true);
+					remoteModel->modelBottom.setPosition({ packet.position.x, 0.0f, packet.position.y });
+					remoteModel->modelTop.setPosition({ packet.position.x, 0.0f, packet.position.y });
 				}
 				else
 				{
 					const glm::vec3 newPos = toVec3(packet.position);
 					//se::log::info("remote pos: " + se::toString(id) + " " + se::toString(newPos));
-					const glm::vec3 diff{ newPos - it->second->getPosition() };
+					const glm::vec3 diff{ newPos - it->second->modelBottom.getPosition() };
 					if (glm::length(diff) > 0.0f)
 					{
-						it->second->setRotation(glm::slerp(
-							it->second->getRotation(),
+						it->second->modelBottom.setRotation(glm::slerp(
+							it->second->modelBottom.getRotation(),
 							glm::quatLookAt(glm::normalize(diff), glm::vec3{ 0.0f, 1.0f, 0.0f }),
 							0.3f));
 					}
-					it->second->setPosition(glm::mix(
-						it->second->getPosition(),
+					it->second->modelBottom.setPosition(glm::mix(
+						it->second->modelBottom.getPosition(),
+						newPos,
+						0.2f));
+					it->second->modelTop.setPosition(glm::mix(
+						it->second->modelBottom.getPosition(),
 						newPos,
 						0.2f));
 				}
@@ -167,17 +180,17 @@ void PlayerCharacter::Impl::update()
 		const float len = glm::length(movement);
 		facing = glm::normalize(movement);
 		movement = facing * glm::min(len, playerAttributes.movementSpeed);
-		model.setRotation(glm::quatLookAt(facing, glm::vec3{ 0.0f, 1.0f, 0.0f }));
+		model.modelBottom.setRotation(glm::quatLookAt(facing, glm::vec3{ 0.0f, 1.0f, 0.0f }));
 	}
 
-	glm::vec3 position = model.getPosition() + movement * context.deltaTimeSystem.deltaSeconds;
-	position.y = 2.0f + fabsf(sinf(se::time::now().asSeconds() * 0.001f));
-	model.setPosition(position);
+	glm::vec3 position = model.modelBottom.getPosition() + movement * context.deltaTimeSystem.deltaSeconds;
+	model.modelBottom.setPosition(position);
+	model.modelTop.setPosition(position);
 
 	constexpr float deceleration = 1.0f;
 	movement = glm::mix(movement, glm::vec3{}, deceleration * context.deltaTimeSystem.deltaSeconds);
 
-	context.camera.setPosition(glm::mix(context.camera.getPosition(), model.getPosition() + facing * 10.0f + cameraDistance, 4.0f * context.deltaTimeSystem.deltaSeconds));
+	context.camera.setPosition(glm::mix(context.camera.getPosition(), model.modelTop.getPosition() + facing * 10.0f + cameraDistance, 4.0f * context.deltaTimeSystem.deltaSeconds));
 	//context.camera.setDirection(glm::normalize(model.getPosition() - context.camera.getPosition()));
 
 	if (se::time::timeSince(lastSendUpdateTime) > se::time::fromSeconds(1.0f / 20.0f))
@@ -189,13 +202,27 @@ void PlayerCharacter::Impl::update()
 		lastSendUpdateTime = se::time::now();
 	}
 }
-void PlayerCharacter::Impl::initPlayer(Shape& _shape, bool _remote)
+void PlayerCharacter::Impl::initPlayer(PlayerModel& _model, bool _remote)
 {
-	_shape.generate(ShapeType::Box, ShapeParameters{}, &context.shapeGenerator);
-	_shape.setMaterial(context.materialManager.createMaterial(DefaultMaterialType::FlatColor));
-	_shape.setColor(_remote ? se::Color(se::CadetBlue) : se::Color(se::BlueViolet));
-	_shape.setScale(glm::vec3{ 1.5f, 4.0f, 1.5f });
-	context.scene.add(_shape);
+	auto mat = context.materialManager.createMaterial(DefaultMaterialType::Phong);
+	mat->setTexture(context.textureManager.find("white_color"), PhongTextureType::Color);
+	mat->setTexture(context.textureManager.find("flat_normal"), PhongTextureType::Normal);
+
+	constexpr glm::vec3 playerModelScale{ 300.0f };
+
+	_model.modelBottom.loadModelData(
+		context.modelDataManager.create("player_bottom", "Character_MechTank_1_Bottom.fbx"));
+	_model.modelBottom.setScale(playerModelScale);
+	_model.modelBottom.setMaterial(mat);
+	_model.modelBottom.setColor(_remote ? se::Color(se::CadetBlue) : se::Color(se::BlueViolet));
+	context.scene.add(_model.modelBottom);
+
+	_model.modelTop.loadModelData(
+		context.modelDataManager.create("player_top", "Character_MechTank_1_Top.fbx"));
+	_model.modelTop.setScale(playerModelScale);
+	_model.modelTop.setMaterial(mat);
+	_model.modelTop.setColor(_remote ? se::Color(se::CadetBlue) : se::Color(se::BlueViolet));
+	context.scene.add(_model.modelTop);
 }
 
 void PlayerCharacter::Impl::updatePlayerAttributes()
@@ -224,13 +251,13 @@ void PlayerCharacter::Impl::shoot()
 			for (size_t i = 0; i < playerAttributes.weaponShotSize; i++)
 			{
 				const glm::vec3 direction = glm::rotate(facing, angle, normal);
-				bulletManager.shoot(model.getPosition(), direction, playerAttributes.weaponRange, playerAttributes.weaponVelocity, playerAttributes.weaponDamage);
+				bulletManager.shoot(model.modelTop.getPosition(), direction, playerAttributes.weaponRange, playerAttributes.weaponVelocity, playerAttributes.weaponDamage);
 				angle += angleInterval;
 			}
 		}
 		else
 		{
-			bulletManager.shoot(model.getPosition(), facing, playerAttributes.weaponRange, playerAttributes.weaponVelocity, playerAttributes.weaponDamage);
+			bulletManager.shoot(model.modelTop.getPosition(), facing, playerAttributes.weaponRange, playerAttributes.weaponVelocity, playerAttributes.weaponDamage);
 		}
 		lastShootTime = se::time::now();
 	}

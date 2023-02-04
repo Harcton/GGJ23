@@ -73,9 +73,7 @@ struct DemoContext
 	se::debug::ImmediateModeGraphics &imGraphics;
 
 	MutationDatabase& mutationDatabase;
-	MaterialManager& materialManager;
 	UserSettings& userSettings;
-	SoundPlayer& soundPlayer;
 
 	// GUI
 	se::gui::GUIView& guiView;
@@ -86,4 +84,8 @@ struct DemoContext
 	// Audio
 	se::audio::AudioEngine &audioEngine;
 	se::audio::AudioManager &audioManager;
+
+
+	MaterialManager& materialManager;
+	SoundPlayer& soundPlayer;
 };

@@ -175,13 +175,13 @@ struct DemoContextState::Impl
 			shapeGenerator,
 			imGraphics,
 			mutationDatabase,
-			materialManager,
 			userSettings,
-			soundPlayer,
 			guiView,
 			imguiBackend,
 			audioEngine,
 			audioManager,
+			materialManager,
+			soundPlayer,
 		};
 	}
 
