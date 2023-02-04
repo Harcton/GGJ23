@@ -23,6 +23,7 @@
 #include "SpehsEngine/Input/EventCatcher.h"
 #include "SpehsEngine/Input/EventSignaler.h"
 #include "SpehsEngine/Input/InputManager.h"
+#include "Base/ClientUtility/MaterialManager.h"
 
 
 struct DemoContextState::Impl
@@ -34,6 +35,7 @@ struct DemoContextState::Impl
 		, guiView(shaderManager, textureManager, fontManager, eventSignaler, 9001)
 		, imguiBackend(eventSignaler, 0, renderer)
 		, imGraphics(view, shaderManager, textureManager, fontManager, modelDataManager, shapeGenerator)
+		, materialManager(shaderManager, textureManager)
 	{
 		se::time::ScopeTimer initTimer;
 
@@ -64,6 +66,8 @@ struct DemoContextState::Impl
 
 		imGraphics.init();
 		ImGfx::init(imGraphics);
+
+		materialManager.init();
 
 
 		///////////////
@@ -160,6 +164,7 @@ struct DemoContextState::Impl
 			modelDataManager,
 			shapeGenerator,
 			imGraphics,
+			materialManager,
 			guiView,
 			imguiBackend,
 			audioEngine,
@@ -186,6 +191,8 @@ struct DemoContextState::Impl
 	se::graphics::ModelDataManager modelDataManager;
 	se::graphics::ShapeGenerator shapeGenerator;
 	se::debug::ImmediateModeGraphics imGraphics;
+
+	MaterialManager materialManager;
 
 	se::gui::GUIView guiView;
 

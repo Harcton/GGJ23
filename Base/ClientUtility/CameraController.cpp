@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "CameraController.h"
+#include "Base/ClientUtility/CameraController.h"
 
 #include "boost/bind.hpp"
 #include "SpehsEngine/Input/MouseUtilityFunctions.h"
@@ -39,7 +39,9 @@ void CameraController::update()
 
 	float moveSpeed = MOVEMENT_SPEED;
 	if (boosting)
-		moveSpeed *= 3;
+	{
+		moveSpeed *= 5.0f;
+	}
 
 	const glm::vec3 position =
 		context.camera.getPosition() + movement * moveSpeed * context.deltaTimeSystem.deltaSeconds;

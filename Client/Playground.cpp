@@ -15,9 +15,9 @@
 #include "SpehsEngine/GUI/GUIShape.h"
 #include "SpehsEngine/Input/EventSignaler.h"
 #include "Base/DemoContext.h"
-#include "Client/CameraController.h"
-#include "Client/MaterialManager.h"
-#include "Client/SoundPlayer.h"
+#include "Base/ClientUtility/CameraController.h"
+#include "Base/ClientUtility/MaterialManager.h"
+#include "Base/ClientUtility/SoundPlayer.h"
 
 using namespace se::graphics;
 using namespace se::gui;
@@ -37,7 +37,6 @@ private:
 	glm::vec3 movement{};
 	std::optional<SoundId> boingSoundId;
 	SoundPlayer soundPlayer;
-	MaterialManager materialManager;
 	CameraController cameraController;
 	Model frog;
 	AmbientLight ambientLight;
@@ -64,9 +63,8 @@ Playground::Impl::~Impl()
 Playground::Impl::Impl(DemoContext& _context)
 	: context(_context)
 	, soundPlayer(_context)
-	, materialManager(_context)
 	, ambientLight(se::Color{}, 0.5f)
-	, sunLight(se::Color{}, 0.5f, glm::vec3{1.0f, 1.0f, 1.0f})
+	, sunLight(se::Color{}, 0.5f, glm::vec3{1.0f, 2.0f, 1.0f})
 	, cameraController(_context, inputPriority + 1)
 {
 	context.guiView.add(guiRoot);
@@ -78,11 +76,11 @@ Playground::Impl::Impl(DemoContext& _context)
 
 	context.fontManager.create("playground_font", "Teko-Regular.ttf", FontSize{ 32 });
 
-	auto bodyMat = materialManager.createMaterial(MaterialType::DemoFrog);
+	auto bodyMat = context.materialManager.createMaterial(MaterialType::DemoFrog);
 	bodyMat->setTexture(context.textureManager.create("body_tex", "body_tex.png"), PhongTextureType::Color);
 	bodyMat->setTexture(context.textureManager.find("flat_normal"), PhongTextureType::Normal);
 	bodyMat->setTexture(context.textureManager.find("roughness_1"), PhongTextureType::Roughness);
-	auto eyeMat = materialManager.createMaterial(MaterialType::DemoFrog);
+	auto eyeMat = context.materialManager.createMaterial(MaterialType::DemoFrog);
 	eyeMat->setTexture(context.textureManager.create("eye_tex", "eye_tex.png"), PhongTextureType::Color);
 	eyeMat->setTexture(context.textureManager.find("flat_normal"), PhongTextureType::Normal);
 	eyeMat->setTexture(context.textureManager.find("roughness_0"), PhongTextureType::Roughness);

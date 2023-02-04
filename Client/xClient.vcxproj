@@ -143,12 +143,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BulletManager.cpp" />
+    <ClCompile Include="EvilRootManager.cpp" />
     <ClCompile Include="LobbyClient.cpp" />
-    <ClCompile Include="CameraController.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="MaterialManager.cpp" />
+    <ClCompile Include="PlayerCharacter.cpp" />
     <ClCompile Include="Playground.cpp" />
-    <ClCompile Include="SoundPlayer.cpp" />
+    <ClCompile Include="RootsGame.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -157,11 +158,12 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BulletManager.h" />
+    <ClInclude Include="EvilRootManager.h" />
     <ClInclude Include="LobbyClient.h" />
-    <ClInclude Include="CameraController.h" />
-    <ClInclude Include="MaterialManager.h" />
+    <ClInclude Include="PlayerCharacter.h" />
     <ClInclude Include="Playground.h" />
-    <ClInclude Include="SoundPlayer.h" />
+    <ClInclude Include="RootsGame.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>

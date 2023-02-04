@@ -128,6 +128,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ClientUtility\CameraController.cpp" />
+    <ClCompile Include="ClientUtility\MaterialManager.cpp" />
+    <ClCompile Include="ClientUtility\SoundPlayer.cpp" />
     <ClCompile Include="DemoContextState.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -137,6 +140,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ClientUtility\CameraController.h" />
+    <ClInclude Include="ClientUtility\MaterialManager.h" />
+    <ClInclude Include="ClientUtility\SoundPlayer.h" />
     <ClInclude Include="DefaultResourcePathFinders.h" />
     <ClInclude Include="DemoContext.h" />
     <ClInclude Include="DemoContextState.h" />

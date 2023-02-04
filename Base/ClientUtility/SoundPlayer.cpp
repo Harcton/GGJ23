@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "SoundPlayer.h"
+#include "Base/ClientUtility/SoundPlayer.h"
 
 #include "SpehsEngine/Audio/AudioEngine.h"
 #include "SpehsEngine/Audio/AudioManager.h"

@@ -44,6 +44,9 @@ namespace se
 	}
 }
 
+class MaterialManager;
+
+
 struct DemoContext
 {
 	se::time::DeltaTimeSystem &deltaTimeSystem;
@@ -65,6 +68,8 @@ struct DemoContext
 	se::graphics::ModelDataManager &modelDataManager;
 	se::graphics::ShapeGenerator &shapeGenerator;
 	se::debug::ImmediateModeGraphics &imGraphics;
+
+	MaterialManager& materialManager;
 
 	// GUI
 	se::gui::GUIView& guiView;
