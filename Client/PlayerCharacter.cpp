@@ -56,7 +56,7 @@ PlayerCharacter::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 	glm::vec2 playerPos = se::rng::circle(40.0f);
 
 	initPlayer(model, false);
-	model.setPosition(glm::vec3{ playerPos.x, 0.0f, playerPos.y });
+	model.setPosition(toVec3(playerPos));
 
 	context.camera.setPosition(model.getPosition() + cameraDistance);
 	context.camera.setDirection(glm::normalize(model.getPosition() - context.camera.getPosition()));
@@ -114,7 +114,7 @@ PlayerCharacter::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 				}
 				else
 				{
-					const glm::vec3 newPos{ packet.position.x, 0.0f, packet.position.y };
+					const glm::vec3 newPos = toVec3(packet.position);
 					//se::log::info("remote pos: " + se::toString(id) + " " + se::toString(newPos));
 					const glm::vec3 diff{ newPos - it->second->getPosition() };
 					if (glm::length(diff) > 0.0f)

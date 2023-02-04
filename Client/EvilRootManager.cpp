@@ -6,17 +6,17 @@
 #include "SpehsEngine/Graphics/ModelDataManager.h"
 #include "SpehsEngine/Graphics/ShaderManager.h"
 #include "SpehsEngine/Graphics/Shape.h"
+#include "SpehsEngine/Graphics/FontManager.h"
 #include "SpehsEngine/Graphics/TextureManager.h"
 #include "Base/ClientUtility/MaterialManager.h"
 #include "Base/Net/Packets.h"
 #include "Client/BulletManager.h"
 
 using namespace se::graphics;
+#pragma optimize("", off)
 
 
-constexpr float rootLength = 20.0f;
 constexpr se::time::Time growthTime = se::time::fromSeconds(4.0f);
-constexpr se::time::Time growthInterval = se::time::fromSeconds(15.0f);
 constexpr float headRadius = 5.0f;
 
 struct EvilRootManager::Impl
@@ -29,61 +29,27 @@ struct EvilRootManager::Impl
 	BulletManager& bulletManager;
 	const float worldRadius;
 
-	struct EvilRootData
+	struct EvilRootVisuals
 	{
-		virtual ~EvilRootData() = default;
-		EvilRootData(ClientContext& _context, glm::vec3 _start, glm::vec3 _end)
+		EvilRootVisuals(ClientContext& _context, RootCreatePacket& _packet)
 			: context(_context)
-			, startPoint(_start)
-			, endPoint(_end)
+			, id(_packet.rootId)
+			, startPoint(toVec3(_packet.start))
+			, endPoint(toVec3(_packet.end))
 			, spawnTime(se::time::now())
-		{}
-		virtual void update(BulletManager& _bulletManager)
-		{
-			if (branches.empty() && se::time::timeSince(spawnTime) > growthInterval)
-			{
-				const glm::vec3 newEnd = endPoint + glm::normalize(-endPoint) * rootLength;
-				createBranch(endPoint, newEnd);
-			}
-
-			for (auto it = branches.begin(); it != branches.end();)
-			{
-				EvilRootData& branch = *it->get();
-				if (se::time::timeSince(branch.spawnTime) > growthTime &&
-					_bulletManager.hitTest(branch.endPoint, headRadius))
-				{
-					it = branches.erase(it);
-					continue;
-				}
-				branch.update(_bulletManager);
-				it++;
-			}
-		}
-		virtual void createBranch(glm::vec3 _start, glm::vec3 _end) = 0;
-
-		ClientContext& context;
-		const glm::vec3 startPoint;
-		const glm::vec3 endPoint;
-		const se::time::Time spawnTime;
-		std::vector<std::unique_ptr<EvilRootData>> branches;
-	};
-	struct EvilRootVisuals : EvilRootData
-	{
-		EvilRootVisuals(ClientContext& _context, glm::vec3 _start, glm::vec3 _end)
-			: EvilRootData(_context, _start, _end)
-			, growthDir(glm::normalize(glm::vec3{ _end - _start }))
+			, growthDir(glm::normalize(endPoint - startPoint))
+			, health(_packet.health)
 		{
 			root.generate(ShapeType::Box);
 			root.setPosition(glm::vec3{ startPoint });
 			root.setRotation(glm::quatLookAt(growthDir, glm::vec3{0.0f, 1.0f, 0.0f}));
-			root.setColor(se::Color(se::Pink));
+			root.setColor(se::Color(se::SaddleBrown));
 			root.setMaterial(context.materialManager.createMaterial(DefaultMaterialType::FlatColor));
 			context.scene.add(root);
 		}
-		void update(BulletManager& _bulletManager) override
+		void update()
 		{
-			EvilRootData::update(_bulletManager);
-
+			const float rootLength = glm::distance(startPoint, endPoint);
 			const float growthProgress = glm::clamp(se::time::timeSince(spawnTime).asSeconds() / growthTime.asSeconds(), 0.0f, 1.0f);
 			root.setScale(glm::vec3{ 1.0f, 1.0f, growthProgress * rootLength });
 			root.setPosition(glm::vec3{ startPoint } + growthDir * growthProgress * rootLength * 0.5f);
@@ -97,17 +63,35 @@ struct EvilRootManager::Impl
 				head->setColor(se::Color(se::Red));
 				head->setMaterial(context.materialManager.createMaterial(DefaultMaterialType::FlatColor));
 				context.scene.add(*head);
+
+
+				auto mat = context.materialManager.createMaterial(DefaultMaterialType::Text);
+				mat->setFont(context.fontManager.getDefaultFont());
+				hpText.setMaterial(mat);
+				hpText.setScale(glm::vec3{ 0.05f });
+				hpText.insert(std::to_string((int)health));
+				hpText.setPosition(endPoint + glm::vec3{ 0.0f, 5.0f, 0.0f });
+				context.scene.add(hpText);
 			}
 		}
-		void createBranch(glm::vec3 _start, glm::vec3 _end) override
+		void update(RootUpdatePacket& packet)
 		{
-			branches.push_back(std::make_unique<EvilRootVisuals>(context, _start, _end));
+			se_assert(id == packet.rootId);
+			health = packet.health;
+			hpText.clear();
+			hpText.insert(std::to_string((int)health));
 		}
 
+		ClientContext& context;
+		const RootId id;
+		const glm::vec3 startPoint;
+		const glm::vec3 endPoint;
+		const se::time::Time spawnTime;
 		const glm::vec3 growthDir;
 		Shape root;
-		std::optional<Shape> joint;
 		std::optional<Shape> head;
+		Text hpText;
+		float health = 0.0f;
 	};
 
 	void sendRootDamage(const RootId _rootId, const float _damage)
@@ -118,7 +102,7 @@ struct EvilRootManager::Impl
 		context.packetman.sendPacket<RootDamagePacket>(PacketType::RootDamage, packet, true);
 	}
 
-	std::vector<std::unique_ptr<EvilRootData>> rootData;
+	std::vector<std::unique_ptr<EvilRootVisuals>> rootData;
 	se::time::Time lastSpawned = se::time::Time::zero;
 	se::ScopedConnections scopedConnections;
 };
@@ -137,44 +121,50 @@ EvilRootManager::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 	, bulletManager(_bulletManager)
 	, worldRadius(_worldSize * 0.5f)
 {
-	context.packetman.registerReceiveHandler<RootCreatePacket>(PacketType::RootCreate, scopedConnections.add(),
+	context.packetman.registerReceiveHandler<RootCreatePacket>(
+		PacketType::RootCreate, scopedConnections.add(),
 		[this](RootCreatePacket& _packet, const bool _reliable)
 		{
-			se::log::info("Root create TODO");
+			rootData.push_back(std::make_unique<EvilRootVisuals>(context, _packet));
 		});
-	context.packetman.registerReceiveHandler<RootUpdatePacket>(PacketType::RootUpdate, scopedConnections.add(),
+
+	context.packetman.registerReceiveHandler<RootUpdatePacket>(
+		PacketType::RootUpdate, scopedConnections.add(),
 		[this](RootUpdatePacket& _packet, const bool _reliable)
 		{
-			se::log::info("Root update TODO");
+			for (auto&& root : rootData)
+			{
+				if (root->id == _packet.rootId)
+				{
+					root->update(_packet);
+					break;
+				}
+			}
 		});
-	context.packetman.registerReceiveHandler<RootRemovePacket>(PacketType::RootRemove, scopedConnections.add(),
+
+	context.packetman.registerReceiveHandler<RootRemovePacket>(
+		PacketType::RootRemove, scopedConnections.add(),
 		[this](RootRemovePacket& _packet, const bool _reliable)
 		{
-			se::log::info("Root remove TODO");
+			for (size_t i = 0; i < rootData.size(); i++)
+			{
+				if (rootData[i]->id == _packet.rootId)
+				{
+					rootData.erase(rootData.begin() + i);
+					break;
+				}
+			}
 		});
 }
 void EvilRootManager::Impl::update()
 {
-	constexpr se::time::Time spawnInterval = se::time::fromSeconds(5.0f);
-	if (se::time::timeSince(lastSpawned) > spawnInterval)
+	for (auto&& root : rootData)
 	{
-		const glm::vec2 start2d = se::rng::circle(worldRadius);
-		const glm::vec3 start{ start2d.x, 0.0f, start2d.y };
-		const glm::vec3 end = start + glm::normalize(-start) * rootLength;
-		rootData.push_back(std::make_unique<EvilRootVisuals>(context, start, end));
-		lastSpawned = se::time::now();
-	}
-
-	for (auto it = rootData.begin(); it != rootData.end();)
-	{
-		EvilRootData& root = *it->get();
-		if (se::time::timeSince(root.spawnTime) > growthTime &&
-			bulletManager.hitTest(root.endPoint, headRadius))
+		root->update();
+		if (root->head.has_value() && bulletManager.hitTest(root->endPoint, headRadius))
 		{
-			it = rootData.erase(it);
-			continue;
+			constexpr float defaultDamage = 10.0f;
+			sendRootDamage(root->id, defaultDamage);
 		}
-		root.update(bulletManager);
-		it++;
 	}
 }

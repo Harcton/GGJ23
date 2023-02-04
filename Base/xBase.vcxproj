@@ -144,6 +144,7 @@
   <ItemGroup>
     <ClInclude Include="ClientUtility\CameraController.h" />
     <ClInclude Include="ClientUtility\MaterialManager.h" />
+    <ClInclude Include="ClientUtility\SomeUtilities.h" />
     <ClInclude Include="ClientUtility\SoundPlayer.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="DefaultResourcePathFinders.h" />
