@@ -6,7 +6,7 @@
 struct PlayerAttributes
 {
 	float movementSpeed = 30.0f;
-	float weaponDamage = 20.0f;
+	float weaponDamage = 10.0f;
 	float weaponRange = 100.0f;
 	float weaponRate = 1.0f;
 	float weaponVelocity = 100.0f;

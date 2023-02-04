@@ -179,6 +179,7 @@ struct RootServer::Impl
 		packet.rootId = _root.rootId;
 		packet.parentRootId = parent ? parent->rootId : RootId();
 		packet.health = _root.health;
+		packet.rootStrain = _root.rootStrain;
 		for (const std::unique_ptr<Client>& client : context.clients)
 		{
 			client->packetman.sendPacket<RootCreatePacket>(PacketType::RootCreate, packet, true);

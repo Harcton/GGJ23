@@ -12,7 +12,7 @@
 #include "Base/ClientUtility/SoundPlayer.h"
 #include "Base/ClientUtility/SoundPlayer.h"
 #include "Base/Net/Packets.h"
-
+#pragma optimize("", off)
 using namespace se::graphics;
 
 
@@ -22,7 +22,7 @@ struct BulletManager::Impl
 	Impl(ClientContext& _context, float _worldSize);
 	void update();
 	void shoot(const glm::vec3& _pos, const glm::vec3& _dir, const float _range, const float _speed, const float _damage, const RootStrain _rootStrain);
-	bool hitTest(const glm::vec3& _pos, float _radius);
+	std::optional<float> hitTest(const glm::vec3& _pos, float _radius, const RootStrain _rootStrain);
 
 	ClientContext& context;
 	const float worldRadius;
@@ -67,9 +67,9 @@ void BulletManager::shoot(const glm::vec3& _pos, const glm::vec3& _dir, const fl
 {
 	impl->shoot(_pos, _dir, _range, _speed, _damage, _rootStrain);
 }
-bool BulletManager::hitTest(const glm::vec3& _pos, float _radius)
+std::optional<float> BulletManager::hitTest(const glm::vec3& _pos, float _radius, const RootStrain _rootStrain)
 {
-	return impl->hitTest(_pos, _radius);
+	return impl->hitTest(_pos, _radius, _rootStrain);
 }
 
 
@@ -120,20 +120,25 @@ void BulletManager::Impl::shoot(const glm::vec3& _pos, const glm::vec3& _dir, co
 	packet.rootStrain = _rootStrain;
 	context.packetman.sendPacket(PacketType::BulletCreate, packet, false);
 }
-bool BulletManager::Impl::hitTest(const glm::vec3& _pos, float _radius)
+std::optional<float> BulletManager::Impl::hitTest(const glm::vec3& _pos, float _radius, const RootStrain _rootStrain)
 {
 	for (auto it = bullets.begin(); it != bullets.end();)
 	{
 		Bullet& bullet = *it->get();
 		if (glm::distance(_pos, bullet.model.getPosition()) < (_radius + 0.5f))
 		{
+			std::optional<float> damage;
+			if (bullet.owned)
+			{
+				const float factor = (bullet.rootStrain == _rootStrain) ? 10.0f : 1.0f;
+				damage = factor * bullet.damage;
+			}
 			it = bullets.erase(it);
 			context.soundPlayer.playSound("gunhit.ogg", _pos);
-			// delete remote bullets on impact, but return true for own bullets only
-			return bullet.owned;
+			return damage;
 		}
 		it++;
 	}
-	return false;
+	return std::nullopt;
 }
 
