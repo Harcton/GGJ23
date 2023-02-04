@@ -8,7 +8,7 @@
 #include "SpehsEngine/Graphics/Shape.h"
 #include "SpehsEngine/Graphics/TextureManager.h"
 #include "SpehsEngine/Input/EventSignaler.h"
-#include "Base/DemoContext.h"
+#include "Base/Net/Packets.h"
 #include "Base/ClientUtility/MaterialManager.h"
 #include "Base/ClientUtility/CameraController.h"
 #include "Client/BulletManager.h"
@@ -18,11 +18,11 @@ using namespace se::graphics;
 
 struct PlayerCharacter::Impl
 {
-	Impl(DemoContext& _context, BulletManager& _bulletManager);
+	Impl(ClientContext& _context, BulletManager& _bulletManager);
 	~Impl() = default;
 	void update();
 
-	DemoContext& context;
+	ClientContext& context;
 	BulletManager& bulletManager;
 	se::ScopedConnections connections;
 
@@ -30,9 +30,10 @@ struct PlayerCharacter::Impl
 	glm::vec3 input{};
 	glm::vec3 movement{};
 	glm::vec3 facing{0.0f, 0.0f, -1.0f};
+	se::time::Time lastSendUpdateTime;
 };
 
-PlayerCharacter::PlayerCharacter(DemoContext& _context, BulletManager& _bulletManager)
+PlayerCharacter::PlayerCharacter(ClientContext& _context, BulletManager& _bulletManager)
 	: impl(std::make_unique<Impl>(_context, _bulletManager))
 {}
 PlayerCharacter::~PlayerCharacter()
@@ -45,7 +46,7 @@ void PlayerCharacter::update()
 
 constexpr glm::vec3 cameraDistance{ 4.0f, 50.0f, 4.0f };
 
-PlayerCharacter::Impl::Impl(DemoContext& _context, BulletManager& _bulletManager)
+PlayerCharacter::Impl::Impl(ClientContext& _context, BulletManager& _bulletManager)
 	: context(_context)
 	, bulletManager(_bulletManager)
 {
@@ -95,6 +96,12 @@ PlayerCharacter::Impl::Impl(DemoContext& _context, BulletManager& _bulletManager
 			}
 			return false;
 		}, 1000);
+
+	context.packetman.registerReceiveHandler<PlayerUpdatesPacket>(PacketType::PlayerUpdates, connections.add(),
+		[this](PlayerUpdatesPacket& _packet, const bool _reliable)
+		{
+			se::log::info("Player updates packet received TODO " + std::to_string(_packet.playerUpdatePackets.size()));
+		});
 }
 void PlayerCharacter::Impl::update()
 {
@@ -122,5 +129,14 @@ void PlayerCharacter::Impl::update()
 
 	context.camera.setPosition(glm::mix(context.camera.getPosition(), model.getPosition() + facing * 10.0f + cameraDistance, 4.0f * context.deltaTimeSystem.deltaSeconds));
 	//context.camera.setDirection(glm::normalize(model.getPosition() - context.camera.getPosition()));
+
+	if (se::time::timeSince(lastSendUpdateTime) > se::time::fromSeconds(1.0f / 20.0f))
+	{
+		PlayerUpdatePacket packet;
+		packet.position.x = position.x;
+		packet.position.y = position.z;
+		context.packetman.sendPacket(PacketType::PlayerUpdate, packet, false);
+		lastSendUpdateTime = se::time::now();
+	}
 }
 

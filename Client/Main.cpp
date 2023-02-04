@@ -5,12 +5,14 @@
 #include "SpehsEngine/Math/MathLib.h"
 #include "SpehsEngine/Net/ConnectionManager2.h"
 #include "SpehsEngine/Net/NetLib.h"
+#include "SpehsEngine/Net/Packetman.h"
 #include "SpehsEngine/Input/InputLib.h"
 #include "SpehsEngine/Physics/PhysicsLib.h"
 #include "SpehsEngine/GUI/GUILib.h"
 #include "SpehsEngine/Debug/DebugLib.h"
 #include "Base/DemoContextState.h"
 #include "Base/UserSettingsWindow.h"
+#include "Base/Net/Packets.h"
 #include "Client/LobbyClient.h"
 #include "Client/RootsGame.h"
 
@@ -37,11 +39,11 @@ int main(const int argc, const char** argv)
 	UserSettingsWindow userSettingsWindow(demoContext);
 
 	// Lobby loop
-	std::shared_ptr<se::net::Connection2> connection;
+	std::optional<LobbyResult> lobbyResult;
 
 	{
 		LobbyClient lobbyClient(demoContext, connectionManager, processFilepath);
-		while (!demoContext.userSettings.getSkipLobby())
+		while (true)
 		{
 			SE_SCOPE_PROFILER("Frame");
 			const se::time::ScopedFrameLimiter frameLimiter(minFrameTime);
@@ -55,15 +57,22 @@ int main(const int argc, const char** argv)
 			lobbyClient.render();
 			demoContextState.render();
 
-			connection = lobbyClient.getReadyConnection();
-			if (connection)
+			lobbyResult = lobbyClient.getResult();
+			if (lobbyResult)
 			{
 				break;
 			}
 		}
 	}
 
-	RootsGame gaem(demoContext);
+	se::net::Packetman<PacketType> sessionPacketman(*lobbyResult->connection);
+	ClientContext clientContext
+	{
+		demoContext,
+		sessionPacketman,
+		lobbyResult->myClientId,
+	};
+	RootsGame gaem(clientContext);
 
 	// Game loop
 	while (true)
@@ -78,12 +87,6 @@ int main(const int argc, const char** argv)
 		}
 
 		gaem.update();
-
-		if (ImGui::Begin("Client game"))
-		{
-
-		}
-		ImGui::End();
 
 		demoContextState.render();
 	}

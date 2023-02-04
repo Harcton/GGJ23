@@ -1,12 +1,12 @@
 #pragma once
 
 
-struct DemoContext;
+struct SessionContext;
 
 class Playground
 {
 public:
-	Playground(DemoContext& _context);
+	Playground(SessionContext& _context);
 	~Playground();
 	void update();
 private:

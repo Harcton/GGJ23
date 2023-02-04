@@ -1,14 +1,12 @@
 #pragma once
 
 
-
-struct DemoContext;
 class BulletManager;
 
 class EvilRootManager
 {
 public:
-	EvilRootManager(DemoContext& _context, BulletManager& _bulletManager, float _worldSize);
+	EvilRootManager(ClientContext& _context, BulletManager& _bulletManager, float _worldSize);
 	~EvilRootManager();
 	void update();
 private:

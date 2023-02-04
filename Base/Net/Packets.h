@@ -1,11 +1,13 @@
 #pragma once
 
 
-enum class PacketType
+enum class PacketType : uint8_t
 {
 	LobbyEnter,
 	LobbyReady,
 	LobbyStart,
+	PlayerUpdate,
+	PlayerUpdates,
 };
 
 // Client -> server
@@ -27,14 +29,14 @@ struct LobbyEnterResult
 {
 	void write(se::WriteBuffer& writeBuffer) const
 	{
-		se_write(writeBuffer, message);
+		se_write(writeBuffer, clientId);
 	}
 	bool read(se::ReadBuffer& readBuffer)
 	{
-		se_read(readBuffer, message);
+		se_read(readBuffer, clientId);
 		return true;
 	}
-	std::string message;
+	ClientId clientId;
 };
 
 // Client -> server
@@ -65,4 +67,34 @@ struct LobbyStartPacket
 		return true;
 	}
 	bool data = false;
+};
+
+// Client <-> server
+struct PlayerUpdatePacket
+{
+	void write(se::WriteBuffer& writeBuffer) const
+	{
+		se_write(writeBuffer, position);
+	}
+	bool read(se::ReadBuffer& readBuffer)
+	{
+		se_read(readBuffer, position);
+		return true;
+	}
+	glm::vec2 position;
+};
+
+// Server -> client
+struct PlayerUpdatesPacket
+{
+	void write(se::WriteBuffer& writeBuffer) const
+	{
+		se_write(writeBuffer, playerUpdatePackets);
+	}
+	bool read(se::ReadBuffer& readBuffer)
+	{
+		se_read(readBuffer, playerUpdatePackets);
+		return true;
+	}
+	std::unordered_map<ClientId, PlayerUpdatePacket> playerUpdatePackets;
 };

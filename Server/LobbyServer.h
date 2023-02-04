@@ -20,7 +20,7 @@ public:
 	void update();
 	void render();
 
-	bool getReadyClients(std::vector<Client>& deposit) const;
+	bool getReadyClients(std::vector<std::unique_ptr<Client>>& deposit);
 
 private:
 	struct Impl;

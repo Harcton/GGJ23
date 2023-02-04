@@ -1,12 +1,12 @@
 #pragma once
 
 
-struct DemoContext;
+struct SessionContext;
 
 class RootsGame
 {
 public:
-	RootsGame(DemoContext& _context);
+	RootsGame(ClientContext& _context);
 	~RootsGame();
 	void update();
 private:

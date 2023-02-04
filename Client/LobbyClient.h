@@ -9,6 +9,11 @@ namespace se
 	}
 }
 
+struct LobbyResult
+{
+	std::shared_ptr<se::net::Connection2> connection;
+	ClientId myClientId;
+};
 
 class LobbyClient
 {
@@ -19,7 +24,7 @@ public:
 	void update();
 	void render();
 
-	std::shared_ptr<se::net::Connection2> getReadyConnection() const;
+	std::optional<LobbyResult> getResult() const;
 
 private:
 	struct Impl;

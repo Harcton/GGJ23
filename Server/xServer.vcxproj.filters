@@ -16,6 +16,9 @@
     <ClCompile Include="LobbyServer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PlayerCharacterServer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -25,6 +28,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Client.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerCharacterServer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerContext.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

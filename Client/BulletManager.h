@@ -1,12 +1,10 @@
 #pragma once
 
 
-struct DemoContext;
-
 class BulletManager
 {
 public:
-	BulletManager(DemoContext& _context, float _worldSize);
+	BulletManager(ClientContext& _context, float _worldSize);
 	~BulletManager();
 	void update();
 	void shoot(const glm::vec3& _pos, const glm::vec3& _dir);

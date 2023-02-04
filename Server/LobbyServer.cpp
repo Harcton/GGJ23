@@ -12,14 +12,13 @@ struct LobbyServer::Impl
 	struct LobbyClient
 	{
 		LobbyClient(const ClientId _clientId, const std::string_view _name, const std::shared_ptr<se::net::Connection2>& _connection)
-			: packetman(*_connection)
+			: client(new Client(_connection))
 		{
-			client.connection = _connection;
-			client.clientId = _clientId;
-			client.name = _name;
+			client->connection = _connection;
+			client->clientId = _clientId;
+			client->name = _name;
 		}
-		Client client;
-		se::net::Packetman<PacketType> packetman;
+		std::unique_ptr<Client> client;
 		boost::signals2::scoped_connection enterConnection;
 		boost::signals2::scoped_connection readyConnection;
 		bool ready = false;
@@ -37,16 +36,17 @@ struct LobbyServer::Impl
 					_connection->disconnect();
 					return;
 				}
+				_connection->setEnableAssertOnSendFail(false);
 				const ClientId clientId(nextClientId.value++);
 				connectingClients.push_back(std::make_unique<LobbyClient>(clientId, _connection->name,  _connection));
-				connectingClients.back()->packetman.registerReceiveHandler<LobbyEnterPacket, LobbyEnterResult>(
+				connectingClients.back()->client->packetman.registerReceiveHandler<LobbyEnterPacket, LobbyEnterResult>(
 					PacketType::LobbyEnter, connectingClients.back()->enterConnection,
 					[this, clientId](LobbyEnterPacket& _packet, const bool _reliable)->LobbyEnterResult
 					{
 						LobbyEnterResult result;
 						for (size_t i = 0; i < connectingClients.size(); i++)
 						{
-							if (connectingClients[i]->client.clientId == clientId)
+							if (connectingClients[i]->client->clientId == clientId)
 							{
 								std::unique_ptr<LobbyClient> client;
 								std::swap(client, connectingClients[i]);
@@ -54,18 +54,17 @@ struct LobbyServer::Impl
 								connectingClients.pop_back();
 								if (validateName(_packet.name))
 								{
-									client->client.name = _packet.name;
+									client->client->name = _packet.name;
 									addClient(std::move(client));
 								}
 								else
 								{
 									se::log::warning("Client name validation failed: " + _packet.name);
 								}
-								result.message = "welcome";
+								result.clientId = clientId;
 								return result;
 							}
 						}
-						result.message = "Unknown client";
 						return result;
 					});
 			});
@@ -75,7 +74,7 @@ struct LobbyServer::Impl
 	{
 		LobbyClient* const client = _client.get();
 		clients.push_back(std::move(_client));
-		clients.back()->packetman.registerReceiveHandler<LobbyReadyPacket>(
+		clients.back()->client->packetman.registerReceiveHandler<LobbyReadyPacket>(
 			PacketType::LobbyReady, client->readyConnection,
 			[this, client](LobbyReadyPacket& _packet, const bool _reliable)
 			{
@@ -87,11 +86,11 @@ struct LobbyServer::Impl
 	{
 		for (const std::unique_ptr<LobbyClient>& client : connectingClients)
 		{
-			client->packetman.update();
+			client->client->packetman.update();
 		}
 		for (const std::unique_ptr<LobbyClient>& client : clients)
 		{
-			client->packetman.update();
+			client->client->packetman.update();
 		}
 	}
 
@@ -115,7 +114,7 @@ struct LobbyServer::Impl
 			ImGui::Indent();
 			for (const std::unique_ptr<LobbyClient>& client : clients)
 			{
-				std::string string = client->client.name;
+				std::string string = client->client->name;
 				if (client->ready)
 				{
 					string += " (ready)";
@@ -128,7 +127,7 @@ struct LobbyServer::Impl
 			ImGui::Indent();
 			for (const std::unique_ptr<LobbyClient>& client : connectingClients)
 			{
-				ImGui::Text(client->client.name.empty() ? client->client.connection->remoteEndpoint.toString() : client->client.name);
+				ImGui::Text(client->client->name.empty() ? client->client->connection->remoteEndpoint.toString() : client->client->name);
 			}
 			ImGui::Unindent();
 		}
@@ -146,7 +145,7 @@ struct LobbyServer::Impl
 		}
 		for (const std::unique_ptr<LobbyClient>& client : clients)
 		{
-			if (client->client.name == name)
+			if (client->client->name == name)
 			{
 				return false;
 			}
@@ -154,7 +153,7 @@ struct LobbyServer::Impl
 		return true;
 	}
 
-	bool getReadyClients(std::vector<Client>& deposit) const
+	bool getReadyClients(std::vector<std::unique_ptr<Client>>& deposit)
 	{
 		if (clients.size() != targetClientCount)
 		{
@@ -170,8 +169,8 @@ struct LobbyServer::Impl
 		LobbyStartPacket packet;
 		for (const std::unique_ptr<LobbyClient>& client : clients)
 		{
-			client->packetman.sendPacket(PacketType::LobbyStart, packet, true);
-			deposit.push_back(client->client);
+			client->client->packetman.sendPacket(PacketType::LobbyStart, packet, true);
+			deposit.push_back(std::unique_ptr<Client>(client->client.release()));
 		}
 		return true;
 	}
@@ -205,7 +204,7 @@ void LobbyServer::render()
 	impl->render();
 }
 
-bool LobbyServer::getReadyClients(std::vector<Client>& deposit) const
+bool LobbyServer::getReadyClients(std::vector<std::unique_ptr<Client>>& deposit)
 {
 	return impl->getReadyClients(deposit);
 }

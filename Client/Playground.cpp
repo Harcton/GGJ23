@@ -14,7 +14,6 @@
 #include "SpehsEngine/GUI/GUIView.h"
 #include "SpehsEngine/GUI/GUIShape.h"
 #include "SpehsEngine/Input/EventSignaler.h"
-#include "Base/DemoContext.h"
 #include "Base/ClientUtility/CameraController.h"
 #include "Base/ClientUtility/MaterialManager.h"
 #include "Base/ClientUtility/SoundPlayer.h"
@@ -27,12 +26,12 @@ using namespace se::gui::unit_literals;
 class Playground::Impl
 {
 public:
-	Impl(DemoContext&);
+	Impl(SessionContext&);
 	~Impl();
 	void update();
 private:
 
-	DemoContext& context;
+	SessionContext& context;
 	se::ScopedConnections connections;
 	glm::vec3 movement{};
 	std::optional<SoundId> boingSoundId;
@@ -44,7 +43,7 @@ private:
 	GUIElement guiRoot;
 };
 
-Playground::Playground(DemoContext& _context)
+Playground::Playground(SessionContext& _context)
 	: impl(std::make_unique<Impl>(_context))
 {}
 Playground::~Playground()
@@ -60,7 +59,7 @@ Playground::Impl::~Impl()
 {
 	context.guiView.remove(guiRoot);
 }
-Playground::Impl::Impl(DemoContext& _context)
+Playground::Impl::Impl(SessionContext& _context)
 	: context(_context)
 	, soundPlayer(_context)
 	, ambientLight(se::Color{}, 0.5f)

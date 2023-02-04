@@ -38,10 +38,10 @@ struct LobbyClient::Impl
 					break;
 				case se::net::Connection2::Status::Connected:
 					ImGui::Text("Connected");
-					if (ImGui::InputT("Ready", ready))
+					if (ImGui::InputT("Ready", ready) || context.userSettings.getSkipLobby())
 					{
 						LobbyReadyPacket packet;
-						packet.ready = ready;
+						packet.ready = ready || context.userSettings.getSkipLobby();
 						packetman->sendPacket(PacketType::LobbyReady, packet, true);
 					}
 					break;
@@ -53,7 +53,7 @@ struct LobbyClient::Impl
 			else
 			{
 				ImGui::InputT("Name", name);
-				if (ImGui::Button("Connect to server"))
+				if (ImGui::Button("Connect to server") || context.userSettings.getSkipLobby())
 				{
 					connection = connectionManager.connectIP(se::net::Endpoint(se::net::Address("127.0.0.1"), se::net::Port(41623)), false, "Client");
 					if (connection)
@@ -73,7 +73,8 @@ struct LobbyClient::Impl
 										{
 											if (_result)
 											{
-												se::log::info("EnterLobbyResult: " + _result->message);
+												se::log::info("EnterLobbyResult my client id: " + std::to_string(_result->clientId.value));
+												myClientId = _result->clientId;
 												packetman->registerReceiveHandler<LobbyStartPacket>(PacketType::LobbyStart, scopedConnections.add(),
 													[this](LobbyStartPacket& _packet, const bool _reliable)
 													{
@@ -103,15 +104,18 @@ struct LobbyClient::Impl
 		}
 	}
 
-	std::shared_ptr<se::net::Connection2> getReadyConnection() const
+	std::optional<LobbyResult> getResult() const
 	{
 		if (startRequested)
 		{
-			return connection;
+			LobbyResult result;
+			result.connection = connection;
+			result.myClientId = myClientId;
+			return result;
 		}
 		else
 		{
-			return std::shared_ptr<se::net::Connection2>();
+			return std::nullopt;
 		}
 	}
 
@@ -122,6 +126,7 @@ struct LobbyClient::Impl
 	std::shared_ptr<se::net::Connection2> connection;
 	std::unique_ptr<se::net::Packetman<PacketType>> packetman;
 	std::string name;
+	ClientId myClientId;
 	bool ready = false;
 	bool startRequested = false;
 };
@@ -146,7 +151,7 @@ void LobbyClient::render()
 	impl->render();
 }
 
-std::shared_ptr<se::net::Connection2> LobbyClient::getReadyConnection() const
+std::optional<LobbyResult> LobbyClient::getResult() const
 {
-	return impl->getReadyConnection();
+	return impl->getResult();
 }

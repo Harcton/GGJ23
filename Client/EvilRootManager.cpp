@@ -7,7 +7,6 @@
 #include "SpehsEngine/Graphics/ShaderManager.h"
 #include "SpehsEngine/Graphics/Shape.h"
 #include "SpehsEngine/Graphics/TextureManager.h"
-#include "Base/DemoContext.h"
 #include "Base/ClientUtility/MaterialManager.h"
 #include "Client/BulletManager.h"
 
@@ -21,18 +20,18 @@ constexpr float headRadius = 5.0f;
 
 struct EvilRootManager::Impl
 {
-	Impl(DemoContext& _context, BulletManager& _bulletManager, float _worldSize);
+	Impl(ClientContext& _context, BulletManager& _bulletManager, float _worldSize);
 	~Impl() = default;
 	void update();
 
-	DemoContext& context;
+	ClientContext& context;
 	BulletManager& bulletManager;
 	const float worldRadius;
 
 	struct EvilRootData
 	{
 		virtual ~EvilRootData() = default;
-		EvilRootData(DemoContext& _context, glm::vec3 _start, glm::vec3 _end)
+		EvilRootData(ClientContext& _context, glm::vec3 _start, glm::vec3 _end)
 			: context(_context)
 			, startPoint(_start)
 			, endPoint(_end)
@@ -61,7 +60,7 @@ struct EvilRootManager::Impl
 		}
 		virtual void createBranch(glm::vec3 _start, glm::vec3 _end) = 0;
 
-		DemoContext& context;
+		ClientContext& context;
 		const glm::vec3 startPoint;
 		const glm::vec3 endPoint;
 		const se::time::Time spawnTime;
@@ -69,7 +68,7 @@ struct EvilRootManager::Impl
 	};
 	struct EvilRootVisuals : EvilRootData
 	{
-		EvilRootVisuals(DemoContext& _context, glm::vec3 _start, glm::vec3 _end)
+		EvilRootVisuals(ClientContext& _context, glm::vec3 _start, glm::vec3 _end)
 			: EvilRootData(_context, _start, _end)
 			, growthDir(glm::normalize(glm::vec3{ _end - _start }))
 		{
@@ -114,7 +113,7 @@ struct EvilRootManager::Impl
 	se::time::Time lastSpawned = se::time::Time::zero;
 };
 
-EvilRootManager::EvilRootManager(DemoContext& _context, BulletManager& _bulletManager, float _worldSize)
+EvilRootManager::EvilRootManager(ClientContext& _context, BulletManager& _bulletManager, float _worldSize)
 	: impl(std::make_unique<Impl>(_context, _bulletManager, _worldSize)) { }
 EvilRootManager::~EvilRootManager(){ }
 void EvilRootManager::update()
@@ -123,7 +122,7 @@ void EvilRootManager::update()
 }
 
 
-EvilRootManager::Impl::Impl(DemoContext& _context, BulletManager& _bulletManager, float _worldSize)
+EvilRootManager::Impl::Impl(ClientContext& _context, BulletManager& _bulletManager, float _worldSize)
 	: context(_context)
 	, bulletManager(_bulletManager)
 	, worldRadius(_worldSize * 0.5f)

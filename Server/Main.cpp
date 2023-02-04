@@ -12,6 +12,7 @@
 #include "SpehsEngine/Debug/DebugLib.h"
 #include "Base/DemoContextState.h"
 #include "Server/LobbyServer.h"
+#include "Server/PlayerCharacterServer.h"
 
 
 int main()
@@ -36,7 +37,7 @@ int main()
 
 	// Lobby loop
 	const se::time::Time minFrameTime = se::time::fromSeconds(1.0f / float(60.0f));
-	std::vector<Client> clients;
+	std::vector<std::unique_ptr<Client>> clients;
 	{
 		LobbyServer lobbyServer(demoContext, connectionManager);
 		while (true)
@@ -61,21 +62,23 @@ int main()
 	}
 
 	// Game loop
+	ServerContext serverContext
+	{
+		demoContext,
+		clients,
+	};
+	PlayerCharacterServer playerCharacterServer(serverContext);
 	while (true)
 	{
 		SE_SCOPE_PROFILER("Frame");
 		const se::time::ScopedFrameLimiter frameLimiter(minFrameTime);
 
 		connectionManager.update();
+		playerCharacterServer.update();
 		if (!demoContextState.update())
 		{
 			break;
 		}
-
-		if (ImGui::Begin("Server game"))
-		{
-		}
-		ImGui::End();
 
 		demoContextState.render();
 	}

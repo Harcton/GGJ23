@@ -18,7 +18,6 @@
 #include "SpehsEngine/GUI/GUIView.h"
 #include "SpehsEngine/GUI/GUIShape.h"
 #include "SpehsEngine/Input/EventSignaler.h"
-#include "Base/DemoContext.h"
 #include "Base/ClientUtility/CameraController.h"
 #include "Base/ClientUtility/MaterialManager.h"
 #include "Base/ClientUtility/SoundPlayer.h"
@@ -32,11 +31,11 @@ using namespace se::graphics;
 
 struct RootsGame::Impl
 {
-	Impl(DemoContext& _context);
+	Impl(ClientContext& _context);
 	~Impl() = default;
 	void update();
 
-	DemoContext& context;
+	ClientContext& context;
 	View observerView;
 	Window observerWindow;
 	Camera observerCamera;
@@ -52,7 +51,7 @@ struct RootsGame::Impl
 	AmbientLight ambientLight;
 	DirectionalLight sunLight;
 };
-RootsGame::RootsGame(DemoContext& _context)
+RootsGame::RootsGame(ClientContext& _context)
 	: impl(std::make_unique<Impl>(_context)) {}
 RootsGame::~RootsGame()
 {}
@@ -64,7 +63,7 @@ void RootsGame::update()
 
 constexpr float worldSize = 500.0f;
 
-RootsGame::Impl::Impl(DemoContext& _context)
+RootsGame::Impl::Impl(ClientContext& _context)
 	: context(_context)
 	, ambientLight(se::Color{}, 1.0f)
 	, sunLight(se::Color{}, 1.0f, glm::vec3{ 1.0f, 2.0f, 1.0f })
@@ -93,7 +92,11 @@ RootsGame::Impl::Impl(DemoContext& _context)
 			{
 				context.renderer.remove(observerWindow);
 			}
-		}, true);
+		});
+	if (context.userSettings.getEnableDebugOverviewWindow())
+	{
+		context.renderer.add(observerWindow);
+	}
 
 	{
 		ShapeParameters params;

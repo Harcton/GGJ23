@@ -164,6 +164,7 @@
     <ClInclude Include="PlayerCharacter.h" />
     <ClInclude Include="Playground.h" />
     <ClInclude Include="RootsGame.h" />
+    <ClInclude Include="ClientContext.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>

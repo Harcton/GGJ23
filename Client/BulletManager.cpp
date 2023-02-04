@@ -8,7 +8,6 @@
 #include "SpehsEngine/Graphics/Shape.h"
 #include "SpehsEngine/Graphics/TextureManager.h"
 #include "SpehsEngine/Input/EventSignaler.h"
-#include "Base/DemoContext.h"
 #include "Base/ClientUtility/MaterialManager.h"
 
 using namespace se::graphics;
@@ -17,17 +16,17 @@ using namespace se::graphics;
 struct BulletManager::Impl
 {
 	~Impl() = default;
-	Impl(DemoContext& _context, float _worldSize);
+	Impl(ClientContext& _context, float _worldSize);
 	void update();
 	void shoot(const glm::vec3& _pos, const glm::vec3& _dir);
 	bool hitTest(const glm::vec3& _pos, float _radius);
 
-	DemoContext& context;
+	ClientContext& context;
 	const float worldRadius;
 
 	struct Bullet
 	{
-		Bullet(DemoContext& _context, const glm::vec3& _pos, const glm::vec3& _dir)
+		Bullet(ClientContext& _context, const glm::vec3& _pos, const glm::vec3& _dir)
 			: start(_pos), dir(_dir)
 		{
 			model.generate(ShapeType::Ball, ShapeParameters{}, &_context.shapeGenerator);
@@ -45,7 +44,7 @@ struct BulletManager::Impl
 };
 
 
-BulletManager::BulletManager(DemoContext& _context, float _worldSize)
+BulletManager::BulletManager(ClientContext& _context, float _worldSize)
 	: impl(std::make_unique<Impl>(_context, _worldSize))
 {}
 BulletManager::~BulletManager()
@@ -64,7 +63,7 @@ bool BulletManager::hitTest(const glm::vec3& _pos, float _radius)
 }
 
 
-BulletManager::Impl::Impl(DemoContext& _context, float _worldSize)
+BulletManager::Impl::Impl(ClientContext& _context, float _worldSize)
 	: context(_context)
 	, worldRadius(_worldSize * 0.5f)
 {

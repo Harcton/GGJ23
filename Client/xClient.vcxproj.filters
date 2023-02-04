@@ -58,5 +58,8 @@
     <ClInclude Include="BulletManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ClientContext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
