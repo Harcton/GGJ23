@@ -17,7 +17,7 @@ using namespace se::graphics;
 #pragma optimize("", off)
 
 
-constexpr se::time::Time growthTime = se::time::fromSeconds(4.0f);
+constexpr se::time::Time growthTime = se::time::fromSeconds(2.5f);
 constexpr float headRadius = 5.0f;
 
 struct EvilRootManager::Impl
@@ -44,10 +44,11 @@ struct EvilRootManager::Impl
 			, rootStrain(_packet.rootStrain)
 			, health(_packet.health)
 		{
-			root.generate(ShapeType::Box, context.materialManager.getDefaultShapeParams(), &context.shapeGenerator);
+			const std::string rootModelName = "root_" + std::to_string(((int)id % 3) + 1) + ".gltf";
+			root.loadModelData(context.modelDataManager.create(rootModelName, rootModelName));
 			root.setPosition(glm::vec3{ startPoint });
 			root.setRotation(glm::quatLookAt(growthDir, glm::vec3{0.0f, 1.0f, 0.0f}));
-			root.setColor(se::Color(se::SaddleBrown));
+			root.setColor(se::Color(0x25150BFF));
 			root.setMaterial(context.materialManager.getDefaultMaterial());
 			context.scene.add(root);
 		}
@@ -87,16 +88,18 @@ struct EvilRootManager::Impl
 		{
 			const float rootLength = glm::distance(startPoint, endPoint);
 			const float growthProgress = glm::clamp(se::time::timeSince(spawnTime).asSeconds() / growthTime.asSeconds(), 0.0f, 1.0f);
-			root.setScale(glm::vec3{ 1.0f, 1.0f, growthProgress * rootLength });
+			root.setScale(glm::vec3{ 1.0f, 1.0f, growthProgress /** rootLength*/ });
 			root.setPosition(glm::vec3{ startPoint } + growthDir * growthProgress * rootLength * 0.5f);
 
 			if (!head.has_value() && se::time::timeSince(spawnTime) > growthTime)
 			{
 				head.emplace();
-				head->generate(ShapeType::Sphere, context.materialManager.getDefaultShapeParams(), &context.shapeGenerator);
+				const std::string jointModelName = "joint_" + std::to_string(((int)id % 2) + 1) + ".gltf";
+				head->loadModelData(context.modelDataManager.create(jointModelName, jointModelName));
 				head->setPosition(glm::vec3{ endPoint });
-				head->setScale(glm::vec3{ headRadius });
-				head->setColor(se::Color(se::Red));
+				head->setRotation(glm::quatLookAt(growthDir, glm::vec3{ 0.0f, 1.0f, 0.0f }));
+				head->setScale(glm::vec3{ 1.5f });
+				head->setColor(toColor(rootStrain));
 				head->setMaterial(context.materialManager.getDefaultMaterial());
 				context.scene.add(*head);
 
@@ -153,8 +156,8 @@ struct EvilRootManager::Impl
 		const se::time::Time spawnTime;
 		const glm::vec3 growthDir;
 		const RootStrain rootStrain;
-		Shape root;
-		std::optional<Shape> head;
+		Model root;
+		std::optional<Model> head;
 		Text hpText;
 		float health = 0.0f;
 

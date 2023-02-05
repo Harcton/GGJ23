@@ -103,7 +103,7 @@ RootsGame::Impl::Impl(ClientContext& _context)
 
 		ShapeParameters params = context.materialManager.getDefaultShapeParams();
 		params.resolution = 100;
-		params.uvScale = 10.0f;
+		params.uvScale = 7.5f;
 
 		ground.generate(ShapeType::Circle, params, &context.shapeGenerator);
 		ground.setMaterial(material);

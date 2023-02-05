@@ -147,7 +147,7 @@ struct RootServer::Impl
 	{
 		if (_root.children.empty() && se::time::timeSince(_root.spawnTime) > growthInterval && se::time::timeSince(_root.childTime) > growthInterval)
 		{
-			const int numRoots = se::rng::weightedCoin(0.25f) ? 2 : 1;
+			const int numRoots = se::rng::weightedCoin(0.33f) ? 2 : 1;
 
 			for (size_t i = 0; i < numRoots; i++)
 			{
@@ -156,7 +156,7 @@ struct RootServer::Impl
 				child.health = 100.0f;
 				child.start = _root.end;
 				const glm::vec2 dir = glm::rotate(glm::normalize(-child.start),
-					se::rng::random(-se::PI<float> *0.2f, se::PI<float> *0.2f));
+					se::rng::random(-se::PI<float> *0.25f, se::PI<float> *0.25f));
 				child.end = child.start + dir * rootLength;
 				child.spawnTime = se::time::now();
 				child.rootStrain = _root.rootStrain;
