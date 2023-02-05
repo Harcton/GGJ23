@@ -74,6 +74,7 @@ int main(const int argc, const char** argv)
 		demoContext,
 		sessionPacketman,
 		lobbyResult->myClientId,
+		lobbyResult->startingRootStrain,
 	};
 	RootsGame gaem(clientContext);
 

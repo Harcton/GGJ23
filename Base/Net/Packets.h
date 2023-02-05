@@ -39,13 +39,16 @@ struct LobbyEnterResult
 	void write(se::WriteBuffer& writeBuffer) const
 	{
 		se_write(writeBuffer, clientId);
+		se_write(writeBuffer, startingRootStrain);
 	}
 	bool read(se::ReadBuffer& readBuffer)
 	{
 		se_read(readBuffer, clientId);
+		se_read(readBuffer, startingRootStrain);
 		return true;
 	}
 	ClientId clientId;
+	RootStrain startingRootStrain;
 };
 
 // Client -> server
@@ -85,15 +88,18 @@ struct PlayerUpdatePacket
 	{
 		se_write(writeBuffer, position);
 		se_write(writeBuffer, facing);
+		se_write(writeBuffer, rootStrainLoadout);
 	}
 	bool read(se::ReadBuffer& readBuffer)
 	{
 		se_read(readBuffer, position);
 		se_read(readBuffer, facing);
+		se_read(readBuffer, rootStrainLoadout);
 		return true;
 	}
 	glm::vec2 position;
 	glm::vec2 facing;
+	RootStrain rootStrainLoadout = RootStrain::Pink;
 };
 
 // Server -> client

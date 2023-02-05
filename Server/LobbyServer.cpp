@@ -39,10 +39,12 @@ struct LobbyServer::Impl
 				}
 				_connection->setEnableAssertOnSendFail(false);
 				const ClientId clientId(nextClientId.value++);
+				const RootStrain startingRootStrain = getUnusedRootStrain();
 				connectingClients.push_back(std::make_unique<LobbyClient>(clientId, _connection->name,  _connection));
+				connectingClients.back()->client->rootStrainLoadout = startingRootStrain;
 				connectingClients.back()->client->packetman.registerReceiveHandler<LobbyEnterPacket, LobbyEnterResult>(
 					PacketType::LobbyEnter, connectingClients.back()->enterConnection,
-					[this, clientId](LobbyEnterPacket& _packet, const bool _reliable)->LobbyEnterResult
+					[this, clientId, startingRootStrain](LobbyEnterPacket& _packet, const bool _reliable)->LobbyEnterResult
 					{
 						LobbyEnterResult result;
 						for (size_t i = 0; i < connectingClients.size(); i++)
@@ -63,6 +65,7 @@ struct LobbyServer::Impl
 									se::log::warning("Client name validation failed: " + _packet.name);
 								}
 								result.clientId = clientId;
+								result.startingRootStrain = startingRootStrain;
 								return result;
 							}
 						}
@@ -71,26 +74,28 @@ struct LobbyServer::Impl
 			});
 	}
 
-	void addClient(std::unique_ptr<LobbyClient>&& _client)
+	RootStrain getUnusedRootStrain() const
 	{
-		LobbyClient* const client = _client.get();
 		std::unordered_set<RootStrain> usedRootStrains;
 		for (const std::unique_ptr<LobbyClient>& client : clients)
 		{
 			usedRootStrains.insert(client->client->rootStrainLoadout);
 		}
-		RootStrain startingRootStrain = RootStrain::Green;
 		for (size_t i = 0; i < size_t(RootStrain::Size); i++)
 		{
 			const RootStrain rootStrain = RootStrain(i);
 			if (!tryFind(usedRootStrains, rootStrain))
 			{
-				startingRootStrain = rootStrain;
-				break;
+				return rootStrain;
 			}
 		}
+		return RootStrain::Blue;
+	}
+
+	void addClient(std::unique_ptr<LobbyClient>&& _client)
+	{
+		LobbyClient* const client = _client.get();
 		clients.push_back(std::move(_client));
-		clients.back()->client->rootStrainLoadout = startingRootStrain;
 		clients.back()->client->packetman.registerReceiveHandler<LobbyReadyPacket>(
 			PacketType::LobbyReady, client->readyConnection,
 			[this, client](LobbyReadyPacket& _packet, const bool _reliable)

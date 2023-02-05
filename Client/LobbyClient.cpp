@@ -74,6 +74,7 @@ struct LobbyClient::Impl
 											{
 												se::log::info("EnterLobbyResult my client id: " + std::to_string(_result->clientId.value));
 												myClientId = _result->clientId;
+												startingRootStrain = _result->startingRootStrain;
 												packetman->registerReceiveHandler<LobbyStartPacket>(PacketType::LobbyStart, scopedConnections.add(),
 													[this](LobbyStartPacket& _packet, const bool _reliable)
 													{
@@ -122,6 +123,7 @@ struct LobbyClient::Impl
 			LobbyResult result;
 			result.connection = connection;
 			result.myClientId = myClientId;
+			result.startingRootStrain = startingRootStrain;
 			return result;
 		}
 		else
@@ -139,6 +141,7 @@ struct LobbyClient::Impl
 	std::string name;
 	std::string address = "127.0.0.1";
 	ClientId myClientId;
+	RootStrain startingRootStrain = RootStrain::Blue;
 	bool ready = false;
 	bool startRequested = false;
 };

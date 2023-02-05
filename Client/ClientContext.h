@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base/DemoContext.h"
+#include "Base/RootStrain.h"
 
 namespace se
 {
@@ -18,4 +19,5 @@ struct ClientContext : public DemoContext
 {
 	se::net::Packetman<PacketType>& packetman;
 	const ClientId myClientId;
+	const RootStrain startingRootStrain;
 };
