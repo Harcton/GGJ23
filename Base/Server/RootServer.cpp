@@ -21,6 +21,7 @@ struct RootServer::Impl
 	RootServer::Impl(ServerContext& _context, float _worldSize)
 		: context(_context)
 		, worldRadius(_worldSize * 0.5f)
+		, lastSpawnTime(se::time::now())
 	{
 		for (const std::unique_ptr<Client>& client : context.clients)
 		{
