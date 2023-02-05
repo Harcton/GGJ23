@@ -21,7 +21,7 @@ MutationDatabase::MutationDatabase()
 		mutation->function = _function;
 		mutation->mutationCategory = _mutationCategory;
 	};
-	auto addLoadout = [&](const std::string_view _name, const RootStrain _rootStrain)
+	auto addLoadout = [&](const std::string_view _name, const RootStrain _rootStrain, const std::function<void(PlayerAttributes&, const uint16_t)>& _function)
 	{
 		const MutationId mutationId = nextMutationId.value++;
 		std::unique_ptr<Mutation>& mutation = lookup[mutationId];
@@ -30,7 +30,7 @@ MutationDatabase::MutationDatabase()
 		mutation->mutationId = mutationId;
 		mutation->maxStacks = 1;
 		mutation->name = _name;
-		mutation->function = [_rootStrain](PlayerAttributes& playerAttributes, const uint16_t) { playerAttributes.rootStrainLoadout = _rootStrain; };
+		mutation->function = _function;
 		mutation->mutationCategory = MutationCategory::Loadout;
 		mutation->rootStrain.emplace(_rootStrain);
 	};
@@ -61,14 +61,38 @@ MutationDatabase::MutationDatabase()
 			playerAttributes.weaponSpread += se::PI<float> *0.05f * float(stacks);
 		});
 
-	addLoadout("#4B6F44 - Ultra-Green",		RootStrain::Green);
-	addLoadout("#2E5894 - Ultra-Blue",		RootStrain::Blue);
-	addLoadout("#8806CE - Ultra-Violet",	RootStrain::Violet);
-	addLoadout("#CE2029 - Ultra-Red",		RootStrain::Red);
-	addLoadout("#FD6C9E - Ultra-Pink",		RootStrain::Pink);
-	addLoadout("#FFEF00 - Ultra-Yellow",	RootStrain::Yellow);
-	addLoadout("#9EFD38 - Ultra-Lime",		RootStrain::Lime);
-	addLoadout("#00FFFF - Ultra-Cyan",		RootStrain::Cyan);
+	addLoadout("#2E5894 - Ultra-Blue", RootStrain::Blue,
+		[](PlayerAttributes& playerAttributes, const uint16_t)
+		{
+			playerAttributes.rootStrainLoadout = RootStrain::Blue;
+			playerAttributes.weaponDamage *= 2.5f;
+			playerAttributes.weaponVelocity *= 2.0f;
+			playerAttributes.weaponRate *= 0.5f;
+		});
+	addLoadout("#8806CE - Ultra-Pink", RootStrain::Pink,
+		[](PlayerAttributes& playerAttributes, const uint16_t)
+		{
+			playerAttributes.rootStrainLoadout = RootStrain::Pink;
+			playerAttributes.weaponShotSize += 2;
+			playerAttributes.weaponDamage *= 1.0f / 3.0f;
+			playerAttributes.weaponSpread += se::PI<float> * 0.2f;
+		});
+	addLoadout("#CE2029 - Ultra-Red", RootStrain::Red,
+		[](PlayerAttributes& playerAttributes, const uint16_t)
+		{
+			playerAttributes.rootStrainLoadout = RootStrain::Red;
+			playerAttributes.weaponShotSize += 4;
+			playerAttributes.weaponDamage *= 1.0f / 3.0f;
+			playerAttributes.weaponRange *= 0.5f;
+			playerAttributes.weaponSpread += se::PI<float> * 0.4f;
+		});
+	addLoadout("#FFEF00 - Ultra-Yellow", RootStrain::Yellow,
+		[](PlayerAttributes& playerAttributes, const uint16_t)
+		{
+			playerAttributes.rootStrainLoadout = RootStrain::Yellow;
+			playerAttributes.weaponDamage *= 0.25f;
+			playerAttributes.weaponRate *= 4.0f;
+		});
 
 	vector.reserve(lookup.size());
 	for (const std::pair<const MutationId, std::unique_ptr<Mutation>>& pair : lookup)

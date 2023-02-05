@@ -2,6 +2,7 @@
 #include "Base/Server/PlayerCharacterServer.h"
 
 #include "Base/Net/Packets.h"
+#include "Base/MutationDatabase.h"
 #include "SpehsEngine/Net/ConnectionManager2.h"
 #pragma optimize("", off)
 
@@ -20,6 +21,17 @@ struct PlayerCharacterServer::Impl
 					//se::log::info("Player update received: " + client->name + ": " + std::to_string(_packet.position.x) + ": " + std::to_string(_packet.position.y));
 					playerUpdatePackets[client->clientId] = _packet;
 				});
+			for (const Mutation* const mutation : context.mutationDatabase.vector)
+			{
+				if (mutation->rootStrain && *mutation->rootStrain == client->rootStrainLoadout)
+				{
+					PlayerMutatePacket packet;
+					packet.stacks = 1;
+					packet.mutationId = mutation->mutationId;
+					client->packetman.sendPacket(PacketType::PlayerMutated, packet, true);
+				}
+			}
+			
 		}
 	}
 
