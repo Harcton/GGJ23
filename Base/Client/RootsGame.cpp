@@ -151,23 +151,15 @@ RootsGame::Impl::Impl(ClientContext& _context)
 		coreLight.setRadius(1.0f, 100.0f);
 	}
 	{
-		//se::graphics::InstanceBuffer<se::graphics::TransformInstanceData> buffer;
-		//constexpr int size = 16;
-		//buffer.resize(size);
-		//for (size_t i = 0; i < size; i++)
-		//{
-		//	TransformInstanceData data;
-		//	data.setPosition();
-		//	data.setRotation(glm::quatLookAt();
-		//	buffer.set(i, data);
-		//}
-		//wall.setInstances(buffer.getBuffer());
+		auto mat = context.materialManager.getDefaultMaterial();
+		mat->setTexture(context.textureManager.create("root_wall.png", "root_wall.png"), PhongTextureType::Color);
+		mat->setTexture(context.textureManager.create("root_wall_normal.png", "root_wall_normal.png"), PhongTextureType::Normal);
 
 		wall.loadModelData(context.modelDataManager.create("wall", "wall_whole_v1.fbx"));
-		wall.setMaterial(context.materialManager.getDefaultMaterial());
+		wall.setMaterial(mat);
 		wall.disableRenderFlags(RenderFlag::CullBackFace);
 		wall.setScale(glm::vec3{ constants::worldSize });
-		wall.setColor(se::Color(0.1f, 0.1f, 0.1f));
+		//wall.setColor(se::Color(0.1f, 0.1f, 0.1f));
 		context.scene.add(wall);
 	}
 

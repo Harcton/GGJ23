@@ -339,6 +339,10 @@ void PlayerCharacter::Impl::update()
 	{
 		position = glm::normalize(position) * (constants::worldSize * 0.5f);
 	}
+	if (glm::distance(position, glm::vec3{}) < (constants::coreSize * 0.5f))
+	{
+		position = glm::normalize(position) * (constants::coreSize * 0.5f);
+	}
 	model.setPosition(position);
 
 	model.setFacing(glm::normalize(mouseWorldPoint - model.getPosition()));
