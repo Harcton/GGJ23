@@ -30,13 +30,20 @@ struct PlayerCharacter::Impl
 	{
 		Model modelBottom;
 		Model modelTop;
+		Model modelWeapon;
 		SpotLight light;
 		glm::vec3 facing{ 0.0f, 0.0f, -1.0f };
 
 	public:
-		void setColor(const se::Color& _color)
+		void setPlayerColor(const se::Color& _color)
 		{
+			// TODO: should color material 0 only
+			modelBottom.setColor(_color);
 			modelTop.setColor(_color);
+		}
+		void setWeaponColor(const se::Color& _color)
+		{
+			modelWeapon.setColor(_color);
 		}
 		const glm::vec3& getPosition() const
 		{
@@ -50,6 +57,7 @@ struct PlayerCharacter::Impl
 		{
 			modelBottom.setPosition(_pos);
 			modelTop.setPosition(_pos);
+			modelWeapon.setPosition(_pos);
 			light.setPosition(_pos + glm::vec3{ 0.0f, 2.5f, 0.0f });
 		}
 		void setRotation(const glm::quat& _rot)
@@ -68,27 +76,44 @@ struct PlayerCharacter::Impl
 		{
 			facing = _dir;
 			modelTop.setRotation(glm::quatLookAt(-facing, glm::vec3{ 0.0f, 1.0f, 0.0f }));
+			modelWeapon.setRotation(glm::quatLookAt(-facing, glm::vec3{ 0.0f, 1.0f, 0.0f }));
 			light.setDirection(facing);
 		}
 		void init(ClientContext& context)
 		{
-			auto mat = context.materialManager.createMaterial(DefaultMaterialType::Phong);
-			mat->setTexture(context.textureManager.find("white_color"), PhongTextureType::Color);
-			mat->setTexture(context.textureManager.find("flat_normal"), PhongTextureType::Normal);
+			constexpr glm::vec3 playerModelScale{ 3.0f };
 
-			constexpr glm::vec3 playerModelScale{ 300.0f };
+			auto colorfulMat = context.materialManager.getDefaultMaterial();
+			colorfulMat->setTexture(context.textureManager.create("color_gradient_dif.png", "color_gradient_dif.png"), PhongTextureType::Color);
+			colorfulMat->setTexture(context.textureManager.find("flat_normal"), PhongTextureType::Normal);
+
+			auto playerMat = context.materialManager.getDefaultMaterial();
+			playerMat->setTexture(context.textureManager.create("player_color_dif.png", "player_color_dif.png"), PhongTextureType::Color);
+			playerMat->setTexture(context.textureManager.find("flat_normal"), PhongTextureType::Normal);
+
+			auto weaponMat = context.materialManager.getDefaultMaterial();
+			weaponMat->setTexture(context.textureManager.create("weapon_color_dif.png", "weapon_color_dif.png"), PhongTextureType::Color);
+			weaponMat->setTexture(context.textureManager.find("flat_normal"), PhongTextureType::Normal);
 
 			modelBottom.loadModelData(
-				context.modelDataManager.create("player_bottom", "Character_MechTank_1_Bottom.fbx"));
+				context.modelDataManager.create("player_bottom", "mechtank_lower.fbx"));
 			modelBottom.setScale(playerModelScale);
-			modelBottom.setMaterial(mat);
+			modelBottom.setMaterial(playerMat, 0);
+			modelBottom.setMaterial(colorfulMat, 1);
 			context.scene.add(modelBottom);
 
 			modelTop.loadModelData(
-				context.modelDataManager.create("player_top", "Character_MechTank_1_Top.fbx"));
+				context.modelDataManager.create("player_top", "mechtank_upper.fbx"));
 			modelTop.setScale(playerModelScale);
-			modelTop.setMaterial(mat);
+			modelTop.setMaterial(playerMat, 0);
+			modelTop.setMaterial(colorfulMat, 1);
 			context.scene.add(modelTop);
+
+			modelWeapon.loadModelData(
+				context.modelDataManager.create("player_weapon", "mechtank_weapon.fbx"));
+			modelWeapon.setScale(playerModelScale);
+			modelWeapon.setMaterial(weaponMat);
+			context.scene.add(modelWeapon);
 
 			light.setCone(se::PI<float> *0.33f, se::PI<float> *0.4f);
 			light.setRadius(20.0f, 100.0f);
@@ -261,7 +286,7 @@ PlayerCharacter::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 							}
 						}
 					}
-					model.setColor(toColor(*addedMutation->rootStrain));
+					model.setWeaponColor(toColor(*addedMutation->rootStrain));
 				}
 			}
 			for (std::pair<MutationId, uint16_t>& pair : mutations)
@@ -302,7 +327,7 @@ void PlayerCharacter::Impl::update()
 
 	context.camera.setPosition(glm::mix(
 		context.camera.getPosition(),
-		model.getPosition() + cameraDistance,
+		model.getPosition() + model.getFacing() * 5.0f + cameraDistance,
 		5.0f * context.deltaTimeSystem.deltaSeconds));
 	//context.camera.setDirection(glm::normalize(model.getPosition() - context.camera.getPosition()));
 
