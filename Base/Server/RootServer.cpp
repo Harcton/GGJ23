@@ -59,6 +59,7 @@ struct RootServer::Impl
 				_roots[i].health -= baseDamage * childArmorFactor;
 				if (_roots[i].health <= 0.0f)
 				{
+					context.money += 1;
 					std::swap(_roots[i], roots.back());
 					_roots.pop_back();
 					RootRemovePacket packet;

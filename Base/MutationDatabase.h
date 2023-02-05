@@ -10,6 +10,7 @@ struct Mutation
 	MutationId mutationId;
 	std::string name;
 	uint16_t maxStacks = 1;
+	unsigned cost = 0;
 	std::optional<RootStrain> rootStrain;
 	MutationCategory mutationCategory = MutationCategory::Default;
 	std::function<void(PlayerAttributes&, const uint16_t)> function;

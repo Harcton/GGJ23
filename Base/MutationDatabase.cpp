@@ -9,7 +9,7 @@ MutationDatabase::MutationDatabase()
 	static const PlayerAttributes defaultPlayerAttributes;
 	MutationId nextMutationId(1);
 
-	auto addMutation = [&](const std::string_view _name, const uint16_t _maxStacks, MutationCategory _mutationCategory, const std::function<void(PlayerAttributes&, const uint16_t)>& _function)
+	auto addUpgrade = [&](const std::string_view _name, const uint16_t _maxStacks, const unsigned _cost, const std::function<void(PlayerAttributes&, const uint16_t)>& _function)
 	{
 		const MutationId mutationId = nextMutationId.value++;
 		std::unique_ptr<Mutation>& mutation = lookup[mutationId];
@@ -18,8 +18,9 @@ MutationDatabase::MutationDatabase()
 		mutation->mutationId = mutationId;
 		mutation->maxStacks = _maxStacks;
 		mutation->name = _name;
+		mutation->cost = _cost;
 		mutation->function = _function;
-		mutation->mutationCategory = _mutationCategory;
+		mutation->mutationCategory = MutationCategory::Default;
 	};
 	auto addLoadout = [&](const std::string_view _name, const RootStrain _rootStrain, const std::function<void(PlayerAttributes&, const uint16_t)>& _function)
 	{
@@ -35,30 +36,15 @@ MutationDatabase::MutationDatabase()
 		mutation->rootStrain.emplace(_rootStrain);
 	};
 
-	addMutation("Minor speed buff", 5, MutationCategory::Default,
+	addUpgrade("Anti wood bullets", 1000, 10,
 		[&](PlayerAttributes& playerAttributes, const uint16_t stacks)
 		{
-			playerAttributes.movementSpeed += float(stacks) * defaultPlayerAttributes.movementSpeed * 0.2f;
+			playerAttributes.weaponDamage *= 1.1f;
 		});
-
-	addMutation("Major speed buff", 1, MutationCategory::Default,
+	addUpgrade("Self adapt track", 1000, 10,
 		[&](PlayerAttributes& playerAttributes, const uint16_t stacks)
 		{
-			playerAttributes.movementSpeed += float(stacks) * defaultPlayerAttributes.movementSpeed * 1.0f;
-		});
-
-	addMutation("Shot size upgrade", 10, MutationCategory::Default,
-		[&](PlayerAttributes& playerAttributes, const uint16_t stacks)
-		{
-			playerAttributes.weaponShotSize += stacks;
-			playerAttributes.weaponSpread += se::PI<float> * 0.05f * float(stacks);
-		});
-
-	addMutation("loadout", 10, MutationCategory::Default,
-		[&](PlayerAttributes& playerAttributes, const uint16_t stacks)
-		{
-			playerAttributes.weaponShotSize += stacks;
-			playerAttributes.weaponSpread += se::PI<float> *0.05f * float(stacks);
+			playerAttributes.movementSpeed *= 1.1f;
 		});
 
 	addLoadout("#2E5894 - Ultra-Blue", RootStrain::Blue,

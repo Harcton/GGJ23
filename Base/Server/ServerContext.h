@@ -7,4 +7,5 @@
 struct ServerContext : public DemoContext
 {
 	std::vector<std::unique_ptr<Client>>& clients;
+	unsigned money = 0;
 };

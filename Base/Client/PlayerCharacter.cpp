@@ -19,6 +19,7 @@
 #include "Base/Client/BulletManager.h"
 #include "Base/PlayerAttributes.h"
 #include "Base/MutationDatabase.h"
+#include "Base/ClientUtility/SoundPlayer.h"
 #include <glm/gtx/rotate_vector.hpp>
 #pragma optimize("", off)
 using namespace se::graphics;
@@ -297,6 +298,10 @@ PlayerCharacter::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 							}
 						}
 					}
+				}
+				else
+				{
+					context.soundPlayer.playSound("shooter_side_upgrade.ogg", model.getPosition());
 				}
 			}
 			for (std::pair<MutationId, uint16_t>& pair : mutations)

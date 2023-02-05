@@ -59,14 +59,13 @@ struct MonitorGui::Impl
 			shape.setSize(size);
 			shape.setColor(color);
 			shape.setPosition(GUIVec2(glm::vec2(1.1f, -0.1f), GUIUnitType::Self));
-			shape.onClick([this](GUIElement&) {/*nextOperatorGui.emplace(OperatorGui::GeneSequencer);*/ });
+			shape.onClick([this](GUIElement&) {nextOperatorGui.emplace(OperatorGui::GeneSequencer); });
 			shape.setTexture("gene-sequencer.png");
 			GUIText& text = shape.addChild<GUIText>();
 			text.insert("Gene-sequencer");
 			text.setSize(textSize);
 			text.setAnchor(textAnchor);
 			text.setPosition(textPosition);
-			text.setColor(se::Color(0.4f, 0.4f, 0.4f));
 		}
 		{
 			GUIShape& shape = rootShape.addChild<GUIShape>();

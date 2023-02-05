@@ -149,6 +149,7 @@
     <ClCompile Include="Server\PlayerCharacterServer.cpp" />
     <ClCompile Include="Server\RadarGui.cpp" />
     <ClCompile Include="Server\RootServer.cpp" />
+    <ClCompile Include="Server\UpgradesGui.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -195,6 +196,7 @@
     <ClInclude Include="Server\RadarGui.h" />
     <ClInclude Include="Server\RootServer.h" />
     <ClInclude Include="Server\ServerContext.h" />
+    <ClInclude Include="Server\UpgradesGui.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StrongInt.h" />
     <ClInclude Include="UserSettings.h" />

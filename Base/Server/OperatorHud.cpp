@@ -7,6 +7,7 @@
 #include "Base/Server/RadarGui.h"
 #include "Base/Server/MutatorGui.h"
 #include "Base/Server/MonitorGui.h"
+#include "Base/Server/UpgradesGui.h"
 #pragma optimize("", off)
 
 using namespace se::gui;
@@ -57,7 +58,7 @@ struct OperatorHud::Impl
 		case IOperatorGui::OperatorGui::Monitor: operatorGui.reset(new MonitorGui(context)); break;
 		case IOperatorGui::OperatorGui::Radar: operatorGui.reset(new RadarGui(context, playerCharacterServer, rootServer)); break;
 		case IOperatorGui::OperatorGui::Mutator: operatorGui.reset(new MutatorGui(context, playerCharacterServer)); break;
-		case IOperatorGui::OperatorGui::GeneSequencer: se_assert(false && "TODO"); break;
+		case IOperatorGui::OperatorGui::GeneSequencer: operatorGui.reset(new UpgradesGui(context, playerCharacterServer)); break;
 		case IOperatorGui::OperatorGui::MysteryGui: se_assert(false && "TODO"); break;
 		}
 	}
@@ -66,15 +67,7 @@ struct OperatorHud::Impl
 	{
 		if (const std::optional<IOperatorGui::OperatorGui> nextOperatorGui = operatorGui->update())
 		{
-			backShape.setVisible(*nextOperatorGui != IOperatorGui::OperatorGui::Monitor);
-			switch (*nextOperatorGui)
-			{
-			case IOperatorGui::OperatorGui::Monitor: operatorGui.reset(new MonitorGui(context)); break;
-			case IOperatorGui::OperatorGui::Radar: operatorGui.reset(new RadarGui(context, playerCharacterServer, rootServer)); break;
-			case IOperatorGui::OperatorGui::Mutator: operatorGui.reset(new MutatorGui(context, playerCharacterServer)); break;
-			case IOperatorGui::OperatorGui::GeneSequencer: se_assert(false && "TODO"); break;
-			case IOperatorGui::OperatorGui::MysteryGui: se_assert(false && "TODO"); break;
-			}
+			setOperatorGui(*nextOperatorGui);
 		}
 	}
 
