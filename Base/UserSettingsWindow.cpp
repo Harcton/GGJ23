@@ -97,6 +97,13 @@ void UserSettingsWindow::update()
 			userSettings.setResolution(glm::ivec2(displayMode.width, displayMode.height));
 		}
 		{
+			bool value = userSettings.getFullscreen();
+			if (ImGui::InputT("Borderless", value))
+			{
+				userSettings.setFullscreen(value);
+			}
+		}
+		{
 			float value = userSettings.getVolumeMaster() * 100.0f;
 			if (ImGui::DragFloat("Master volume", &value, 1.0f, 0.0f, 100.0f, "%.0f %%", 1.0f))
 			{

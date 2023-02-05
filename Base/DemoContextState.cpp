@@ -146,6 +146,16 @@ struct DemoContextState::Impl
 				mainWindow.setWidth(newValue.x);
 				mainWindow.setHeight(newValue.y);
 			}, true);
+		userSettings.connectToFullscreenChangedSignal(scopedConnections.add(),
+			[this](const bool&, const bool& newValue)
+			{
+				mainWindow.setBorderless(newValue);
+				if (newValue)
+				{
+					mainWindow.setX(0);
+					mainWindow.setY(0);
+				}
+			}, true);
 		userSettings.connectToVolumeMasterChangedSignal(scopedConnections.add(), [this](const float&, const float& newValue){ soundPlayer.setMasterVolume(newValue); }, true);
 		userSettings.connectToVolumeMusicChangedSignal(scopedConnections.add(), [this](const float&, const float& newValue){ soundPlayer.setMusicVolume(newValue); }, true);
 		userSettings.connectToVolumeSFXChangedSignal(scopedConnections.add(), [this](const float&, const float& newValue){ soundPlayer.setSfxVolume(newValue); }, true);
