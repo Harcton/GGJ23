@@ -28,8 +28,20 @@ struct MainMenu::Impl
 		const GUIVec2 textPosition(0.5_parent);
 		{
 			GUIShape& shape = guiStack.addChild<GUIShape>();
+			shape.setSize(GUIVec2(1.0_parent, 1.0_parent));
+			shape.onClick([this](GUIElement&) {mainMenuResult.emplace(MainMenuResult::Server); });
 			GUIText& text = shape.addChild<GUIText>();
-			text.insert("Radar");
+			text.insert("Host game as the radio operator");
+			text.setSize(textSize);
+			text.setAnchor(textAnchor);
+			text.setPosition(textPosition);
+		}
+		{
+			GUIShape& shape = guiStack.addChild<GUIShape>();
+			shape.setSize(GUIVec2(1.0_parent, 1.0_parent));
+			shape.onClick([this](GUIElement&) {mainMenuResult.emplace(MainMenuResult::Client); });
+			GUIText& text = shape.addChild<GUIText>();
+			text.insert("Join game as a pilot");
 			text.setSize(textSize);
 			text.setAnchor(textAnchor);
 			text.setPosition(textPosition);

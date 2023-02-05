@@ -6,6 +6,7 @@
 #include "Base/DemoContextState.h"
 #include "Base/LobbyClient.h"
 #include "Base/LobbyServer.h"
+#include "Base/GlobalHud.h"
 #include "Base/MainMenu.h"
 #include "Base/Net/Packets.h"
 #include "Base/Server/OperatorHud.h"
@@ -21,6 +22,7 @@
 #include "SpehsEngine/Input/InputLib.h"
 #include "SpehsEngine/Math/MathLib.h"
 #include "SpehsEngine/Net/NetLib.h"
+#include "SpehsEngine/Net/ConnectionManager2.h"
 #include "SpehsEngine/Net/Packetman.h"
 #include "SpehsEngine/Physics/PhysicsLib.h"
 
@@ -28,6 +30,19 @@
 struct CombinedGame::Impl
 {
 	static constexpr se::time::Time minFrameTime = se::time::fromSeconds(1.0f / float(120.0f));
+
+	bool hasGlobalBack(const StateTransition stateTransition)
+	{
+		switch (stateTransition)
+		{
+		case StateTransition::ClientLobby: return true;
+		case StateTransition::ServerLobby: return true;
+		case StateTransition::Client: return false;
+		case StateTransition::Server: return false;
+		case StateTransition::Quit: return false;
+		}
+		return false;
+	}
 
 	Impl(const std::string& _processFilepath, const std::string& _windowName, const StateTransition _stateTransition)
 		: processFilepath(_processFilepath)
@@ -47,8 +62,10 @@ struct CombinedGame::Impl
 
 		while (true)
 		{
+			demoContext.globalHud.setBackEnabled(hasGlobalBack(stateTransition));
 			switch (stateTransition)
 			{
+			case StateTransition::MainMenu: stateTransition = runMainMenu(); break;
 			case StateTransition::Client: stateTransition = runClient(); break;
 			case StateTransition::ClientLobby: stateTransition = runClientLobby(); break;
 			case StateTransition::Server: stateTransition = runServer(); break;
@@ -62,6 +79,26 @@ struct CombinedGame::Impl
 	{
 		MainMenu mainMenu(demoContext);
 		demoContext.soundPlayer.playMusic("main_theme_root_bgm.ogg", se::time::fromSeconds(2.0f));
+		while (true)
+		{
+			SE_SCOPE_PROFILER("Frame");
+			const se::time::ScopedFrameLimiter frameLimiter(minFrameTime);
+
+			if (!demoContextState.update())
+			{
+				return StateTransition::Quit;
+			}
+			demoContextState.render();
+
+			if (const std::optional<MainMenuResult> result = mainMenu.getResult())
+			{
+				switch (*result)
+				{
+				case MainMenuResult::Client: return StateTransition::ClientLobby;
+				case MainMenuResult::Server: return StateTransition::ServerLobby;
+				}
+			}
+		}
 	}
 
 	StateTransition runClientLobby()
@@ -75,7 +112,6 @@ struct CombinedGame::Impl
 			SE_SCOPE_PROFILER("Frame");
 			const se::time::ScopedFrameLimiter frameLimiter(minFrameTime);
 			
-			lobbyClient.update();
 			if (!demoContextState.update())
 			{
 				return StateTransition::Quit;
@@ -94,6 +130,11 @@ struct CombinedGame::Impl
 				{
 					return StateTransition::MainMenu;
 				}
+			}
+
+			if (demoContext.globalHud.getBackPressed())
+			{
+				return StateTransition::MainMenu;
 			}
 		}
 	}
@@ -157,7 +198,13 @@ struct CombinedGame::Impl
 
 				if (lobbyServer.getReadyClients(serverClients))
 				{
+					demoContext.connectionManager.stopAcceptingIP();
 					return StateTransition::Server;
+				}
+				if (demoContext.globalHud.getBackPressed())
+				{
+					demoContext.connectionManager.stopAcceptingIP();
+					return StateTransition::MainMenu;
 				}
 			}
 		}

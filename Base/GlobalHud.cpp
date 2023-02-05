@@ -24,14 +24,30 @@ struct GlobalHud::Impl
 		settingsShape.setSize(0.07_vh);
 		settingsShape.setColor(se::Color(0.2f, 0.22f, 0.2f));
 		settingsShape.onClick([&](se::gui::GUIElement&) { userSettingsWindow.toggle(); });
-		
-		GUIText& text = settingsShape.addChild<se::gui::GUIText>();
-		text.setZIndex(1000);
-		text.insert("OPT");
-		text.setPosition(se::gui::GUIVec2(glm::vec2(0.5f, 0.5f), se::gui::GUIUnitType::Parent));
-		text.setAnchor(se::gui::GUIVec2(glm::vec2(0.5f, 0.5f), se::gui::GUIUnitType::Self));
-		text.setSize(se::gui::GUIVec2(se::gui::GUIUnit(0.8f, se::gui::GUIUnitType::Parent), se::gui::GUIUnitType::Auto));
-		text.setColor(se::Color(1.0f, 1.0f, 1.0f));
+		{
+			GUIText& text = settingsShape.addChild<se::gui::GUIText>();
+			text.setZIndex(1000);
+			text.insert("OPT");
+			text.setPosition(se::gui::GUIVec2(glm::vec2(0.5f, 0.5f), se::gui::GUIUnitType::Parent));
+			text.setAnchor(se::gui::GUIVec2(glm::vec2(0.5f, 0.5f), se::gui::GUIUnitType::Self));
+			text.setSize(se::gui::GUIVec2(se::gui::GUIUnit(0.8f, se::gui::GUIUnitType::Parent), se::gui::GUIUnitType::Auto));
+			text.setColor(se::Color(1.0f, 1.0f, 1.0f));
+		}
+
+		context.guiView.add(backShape);
+		backShape.setZIndex(10000);
+		backShape.setPosition(se::gui::GUIVec2(glm::vec2(0.05f, 0.95f), se::gui::GUIUnitType::View));
+		backShape.setAnchor(se::gui::GUIVec2(glm::vec2(0.0f, 1.0f), se::gui::GUIUnitType::Self));
+		backShape.setSize(se::gui::GUIVec2(glm::vec2(0.2f, 0.1f), se::gui::GUIUnitType::View));
+		backShape.setColor(se::Color(0.1f, 0.1f, 0.1f));
+		backShape.onClick([&](se::gui::GUIElement&) { backPressed = true; });
+		{
+			GUIText& text = backShape.addChild<se::gui::GUIText>();
+			text.insert("BACK");
+			text.setPosition(se::gui::GUIVec2(glm::vec2(0.5f, 0.5f), se::gui::GUIUnitType::Parent));
+			text.setAnchor(se::gui::GUIVec2(glm::vec2(0.5f, 0.5f), se::gui::GUIUnitType::Self));
+			text.setSize(se::gui::GUIVec2(se::gui::GUIUnit(0.8f, se::gui::GUIUnitType::Parent), se::gui::GUIUnitType::Auto));
+		}
 	}
 
 	~Impl()
@@ -43,9 +59,23 @@ struct GlobalHud::Impl
 	{
 	}
 
+	bool getBackPressed()
+	{
+		const bool result = backPressed;
+		backPressed = false;
+		return result;
+	}
+
+	void setBackEnabled(const bool _enabled)
+	{
+		backShape.setVisible(_enabled);
+	}
+
 	EngineContext& context;
 	UserSettingsWindow& userSettingsWindow;
 	se::gui::GUIShape settingsShape;
+	se::gui::GUIShape backShape;
+	bool backPressed = false;
 };
 
 GlobalHud::GlobalHud(EngineContext& _context, UserSettingsWindow& _userSettingsWindow)
@@ -61,4 +91,14 @@ GlobalHud::~GlobalHud()
 void GlobalHud::update()
 {
 	impl->update();
+}
+
+bool GlobalHud::getBackPressed()
+{
+	return impl->getBackPressed();
+}
+
+void GlobalHud::setBackEnabled(const bool _enabled)
+{
+	impl->setBackEnabled(_enabled);
 }
