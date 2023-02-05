@@ -113,7 +113,8 @@ struct PlayerCharacter::Impl
 			modelWeapon.loadModelData(
 				context.modelDataManager.create("player_weapon", "mechtank_weapon.fbx"));
 			modelWeapon.setScale(playerModelScale);
-			modelWeapon.setMaterial(weaponMat);
+			modelWeapon.setMaterial(weaponMat, 0);
+			modelWeapon.setMaterial(colorfulMat, 1);
 			context.scene.add(modelWeapon);
 
 			light.setCone(se::PI<float> *0.4f, se::PI<float> *0.6f);

@@ -39,8 +39,6 @@ void SoundPlayer::init()
 	audioEngine.setDefaultAttenuationMinDistance(50.0f);
 	audioEngine.setDefaultAttenuationMaxDistance(350.0f);
 	audioEngine.setDefaultAttenuationRolloffFactor(1.2f);
-
-	setMusicVolume(0.5f);
 }
 void SoundPlayer::update()
 {
