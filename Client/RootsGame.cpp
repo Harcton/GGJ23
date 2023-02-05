@@ -50,6 +50,7 @@ struct RootsGame::Impl
 
 	AmbientLight ambientLight;
 	DirectionalLight sunLight;
+	PointLight coreLight;
 };
 RootsGame::RootsGame(ClientContext& _context)
 	: impl(std::make_unique<Impl>(_context)) {}
@@ -64,7 +65,7 @@ void RootsGame::update()
 RootsGame::Impl::Impl(ClientContext& _context)
 	: context(_context)
 	, ambientLight(se::Color{}, 0.5f)
-	, sunLight(se::Color{}, 0.5f, glm::vec3{ 1.0f, 5.0f, 1.0f })
+	, sunLight(se::Color{}, 0.75f, glm::vec3{ 2.0f, 5.0f, 1.0f })
 	, bulletManager(_context, constants::worldSize)
 	, rootManager(_context, bulletManager, constants::worldSize)
 	, player(_context, bulletManager)
@@ -113,8 +114,15 @@ RootsGame::Impl::Impl(ClientContext& _context)
 	{
 		core.loadModelData(context.modelDataManager.create("core", "Base_Structure.fbx"));
 		core.setMaterial(context.materialManager.getDefaultMaterial());
+		core.setScale(glm::vec3{ 1.3f });
 		//core.setScale(glm::vec3{ constants::coreSize });
 		context.scene.add(core);
+
+		coreLight.setColor(se::Color(se::DarkRed));
+		coreLight.setPosition(core.getPosition() + glm::vec3{ 0.0f, 20.0f, 0.0f });
+		coreLight.setIntensity(0.8f);
+		coreLight.setRadius(1.0f, 100.0f);
+		context.scene.add(coreLight);
 	}
 
 	context.soundPlayer.playMusic("GunFightTheme_01.ogg", se::time::fromSeconds(1.0f));
@@ -124,4 +132,6 @@ void RootsGame::Impl::update()
 	rootManager.update();
 	player.update();
 	bulletManager.update();
+
+	coreLight.setIntensity(glm::mix(coreLight.getIntensity(), se::rng::random(0.0f, 1.0f), 20.0f * context.deltaTimeSystem.deltaSeconds));
 }

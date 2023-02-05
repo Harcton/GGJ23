@@ -94,6 +94,7 @@ struct PlayerCharacter::Impl
 			auto weaponMat = context.materialManager.getDefaultMaterial();
 			weaponMat->setTexture(context.textureManager.create("weapon_color_dif.png", "weapon_color_dif.png"), PhongTextureType::Color);
 			weaponMat->setTexture(context.textureManager.find("flat_normal"), PhongTextureType::Normal);
+			weaponMat->setTexture(context.textureManager.find("roughness_0"), PhongTextureType::Roughness);
 
 			modelBottom.loadModelData(
 				context.modelDataManager.create("player_bottom", "mechtank_lower.fbx"));
@@ -115,8 +116,8 @@ struct PlayerCharacter::Impl
 			modelWeapon.setMaterial(weaponMat);
 			context.scene.add(modelWeapon);
 
-			light.setCone(se::PI<float> *0.33f, se::PI<float> *0.4f);
-			light.setRadius(20.0f, 100.0f);
+			light.setCone(se::PI<float> *0.4f, se::PI<float> *0.6f);
+			light.setRadius(30.0f, 150.0f);
 			context.scene.add(light);
 		}
 	};
@@ -248,6 +249,7 @@ PlayerCharacter::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 					std::unique_ptr<PlayerModel>& remoteModel = remoteClients[id] = std::make_unique<PlayerModel>();
 					remoteModel->init(context);
 					remoteModel->setPosition(toVec3(packet.position));
+					remoteModel->setFacing(toVec3(packet.facing));
 				}
 				else
 				{
@@ -255,7 +257,6 @@ PlayerCharacter::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 					const glm::vec3 diff{ newPos - it->second->getPosition() };
 					if (glm::length(diff) > 0.0f)
 					{
-						it->second->setFacing(glm::normalize(diff));
 						it->second->setRotation(glm::slerp(
 							it->second->getRotation(),
 							glm::quatLookAt(glm::normalize(diff), glm::vec3{ 0.0f, 1.0f, 0.0f }),
@@ -264,7 +265,11 @@ PlayerCharacter::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 					it->second->setPosition(glm::mix(
 						it->second->getPosition(),
 						newPos,
-						0.2f));
+						0.4f));
+					it->second->setFacing(glm::mix(
+						it->second->getFacing(),
+						toVec3(packet.facing),
+						0.4f));
 				}
 			}
 		});
@@ -334,8 +339,10 @@ void PlayerCharacter::Impl::update()
 	if (se::time::timeSince(lastSendUpdateTime) > se::time::fromSeconds(1.0f / 20.0f))
 	{
 		PlayerUpdatePacket packet;
-		packet.position.x = position.x;
-		packet.position.y = position.z;
+		packet.position.x = model.getPosition().x;
+		packet.position.y = model.getPosition().z;
+		packet.facing.x = model.getFacing().x;
+		packet.facing.y = model.getFacing().z;
 		context.packetman.sendPacket(PacketType::PlayerUpdate, packet, false);
 		lastSendUpdateTime = se::time::now();
 	}

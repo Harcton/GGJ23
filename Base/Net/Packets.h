@@ -84,13 +84,16 @@ struct PlayerUpdatePacket
 	void write(se::WriteBuffer& writeBuffer) const
 	{
 		se_write(writeBuffer, position);
+		se_write(writeBuffer, facing);
 	}
 	bool read(se::ReadBuffer& readBuffer)
 	{
 		se_read(readBuffer, position);
+		se_read(readBuffer, facing);
 		return true;
 	}
 	glm::vec2 position;
+	glm::vec2 facing;
 };
 
 // Server -> client
