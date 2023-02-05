@@ -18,10 +18,11 @@ struct MainMenu::Impl
 {
 	Impl(DemoContext& _context)
 		: context(_context)
-		, logoText(rootElement.addChild<GUIText>())
+		, logo(rootElement.addChild<GUIShape>())
 	{
 		context.guiView.add(rootElement);
 		rootElement.setPosition(GUIVec2(0.5_view));
+		rootElement.setSize(0.0_view);
 
 		const GUIVec2 textSize(0.8_parent, GUIUnitType::Auto);
 		const GUIVec2 textAnchor(0.5_self);
@@ -55,20 +56,18 @@ struct MainMenu::Impl
 			text.setPosition(textPosition);
 			text.setZIndex(1);
 		}
-		{
-			logoText.insert("R.O.O.T.S: The Last Stand");
-			logoText.setPosition(GUIVec2(glm::vec2(0.0f, -1.1f), GUIUnitType::Self));
-			logoText.setAnchor(GUIVec2(0.5_self, 0.0_self));
-			logoText.setSize(GUIVec2(0.5_vw, 0.2_vh));
-			logoText.setZIndex(9999);
-		}
+
+		logo.setPosition(GUIVec2(glm::vec2(-0.5f, -0.5f), GUIUnitType::Self));
+		logo.setSize(1.0_view);
+		logo.setTexture("roots-title.png");
+		logo.setZIndex(-100);
 
 		context.imguiBackend.connectToPreRenderSignal(scopedConnections.add(),
 			[this]()
 			{
 				logoAnimationState += 0.1f * std::min(0.1f, context.deltaTimeSystem.deltaSeconds);
 				logoAnimationState = std::min(1.0f, logoAnimationState);
-				logoText.setColor(se::mixColor(se::Color(1.0f, 1.0f, 1.0f), se::Color(1.0f, 0.01f, 0.05f), logoAnimationState));
+				logo.setColor(se::mixColor(se::Color(1.0f, 1.0f, 1.0f), se::Color(1.0f, 0.01f, 0.05f), logoAnimationState));
 			});
 	}
 
@@ -79,7 +78,7 @@ struct MainMenu::Impl
 
 	DemoContext& context;
 	GUIElement rootElement;
-	GUIText& logoText;
+	GUIShape& logo;
 	se::ScopedConnections scopedConnections;
 	std::optional<MainMenuResult> mainMenuResult;
 	float logoAnimationState = 0.0f;
