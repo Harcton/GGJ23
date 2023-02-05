@@ -11,6 +11,7 @@
 #include "SpehsEngine/Graphics/Window.h"
 #include "SpehsEngine/Graphics/Camera.h"
 #include "SpehsEngine/Graphics/ModelDataManager.h"
+#include "SpehsEngine/Graphics/InstanceBuffer.h"
 #include "SpehsEngine/Graphics/ShaderManager.h"
 #include "SpehsEngine/Graphics/Shape.h"
 #include "SpehsEngine/Graphics/Text.h"
@@ -46,6 +47,7 @@ struct RootsGame::Impl
 	EvilRootManager rootManager;
 
 	Shape ground;
+	Model wall;
 	Model coreAntenna;
 	Model coreRingA;
 	Model coreRingB;
@@ -69,7 +71,7 @@ bool RootsGame::update()
 
 RootsGame::Impl::Impl(ClientContext& _context)
 	: context(_context)
-	, ambientLight(se::Color{}, 0.5f)
+	, ambientLight(se::Color{}, 0.6f)
 	, sunLight(se::Color{}, 0.75f, glm::vec3{ 2.0f, 5.0f, 1.0f })
 	, bulletManager(_context, constants::worldSize)
 	, rootManager(_context, bulletManager, constants::worldSize)
@@ -146,6 +148,26 @@ RootsGame::Impl::Impl(ClientContext& _context)
 		coreLight.setPosition(coreStructure.getPosition() + glm::vec3{ 0.0f, 20.0f, 0.0f });
 		coreLight.setIntensity(0.8f);
 		coreLight.setRadius(1.0f, 100.0f);
+	}
+	{
+		//se::graphics::InstanceBuffer<se::graphics::TransformInstanceData> buffer;
+		//constexpr int size = 16;
+		//buffer.resize(size);
+		//for (size_t i = 0; i < size; i++)
+		//{
+		//	TransformInstanceData data;
+		//	data.setPosition();
+		//	data.setRotation(glm::quatLookAt();
+		//	buffer.set(i, data);
+		//}
+		//wall.setInstances(buffer.getBuffer());
+
+		wall.loadModelData(context.modelDataManager.create("wall", "wall_whole_v1.fbx"));
+		wall.setMaterial(context.materialManager.getDefaultMaterial());
+		wall.disableRenderFlags(RenderFlag::CullBackFace);
+		wall.setScale(glm::vec3{ constants::worldSize });
+		wall.setColor(se::Color(0.1f, 0.1f, 0.1f));
+		context.scene.add(wall);
 	}
 
 	context.soundPlayer.playMusic("GunFightTheme_01.ogg", se::time::fromSeconds(1.0f));
