@@ -95,8 +95,9 @@ struct EvilRootManager::Impl
 		void update()
 		{
 			const float rootLength = glm::distance(startPoint, endPoint);
+			const float rootScale = glm::distance(startPoint, endPoint) / constants::defaultRootLength;
 			const float growthProgress = glm::clamp(se::time::timeSince(spawnTime).asSeconds() / growthTime.asSeconds(), 0.0f, 1.0f);
-			root.setScale(glm::vec3{ 1.0f, 1.0f, growthProgress /** rootLength*/ });
+			root.setScale(glm::vec3{ 1.0f, 1.0f, growthProgress * rootScale });
 			root.setPosition(glm::vec3{ startPoint } + growthDir * growthProgress * rootLength * 0.5f);
 
 			if (!head.has_value() && se::time::timeSince(spawnTime) > growthTime)

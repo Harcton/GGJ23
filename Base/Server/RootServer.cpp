@@ -14,7 +14,6 @@
 using namespace se::graphics;
 
 
-constexpr float rootLength = 20.0f;
 constexpr se::time::Time growthInterval = se::time::fromSeconds(15.0f);
 
 struct RootServer::Impl
@@ -103,10 +102,12 @@ struct RootServer::Impl
 		constexpr se::time::Time spawnInterval = se::time::fromSeconds(5.0f);
 		if (se::time::timeSince(lastSpawnTime) > spawnInterval)
 		{
+			const float length = constants::defaultRootLength * se::rng::random(0.4f, 2.0f);
+
 			Root root;
 			root.rootId = nextRootId.value++;
 			root.start = se::rng::circle(worldRadius);
-			root.end = root.start + glm::normalize(-root.start) * rootLength;
+			root.end = root.start + glm::normalize(-root.start) * length;
 			root.health = 100.0f;
 			root.spawnTime = se::time::now();
 			root.rootStrain = RootStrain(se::rng::random<size_t>(0, size_t(RootStrain::Size) - 1));
@@ -147,17 +148,18 @@ struct RootServer::Impl
 	{
 		if (_root.children.empty() && se::time::timeSince(_root.spawnTime) > growthInterval && se::time::timeSince(_root.childTime) > growthInterval)
 		{
-			const int numRoots = se::rng::weightedCoin(0.33f) ? 2 : 1;
+			const int numRoots = se::rng::weightedCoin(0.15f) ? 2 : 1;
 
 			for (size_t i = 0; i < numRoots; i++)
 			{
+				const float length = constants::defaultRootLength * se::rng::random(0.4f, 2.0f);
 				Root child;
 				child.rootId = nextRootId.value++;
 				child.health = 100.0f;
 				child.start = _root.end;
 				const glm::vec2 dir = glm::rotate(glm::normalize(-child.start),
 					se::rng::random(-se::PI<float> *0.25f, se::PI<float> *0.25f));
-				child.end = child.start + dir * rootLength;
+				child.end = child.start + dir * length;
 				child.spawnTime = se::time::now();
 				child.rootStrain = _root.rootStrain;
 				_root.childTime = se::time::now();
