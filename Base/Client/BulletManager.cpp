@@ -38,7 +38,7 @@ struct BulletManager::Impl
 			model.setRotation(glm::quatLookAt(_dir, glm::vec3{ 0.0f, 1.0f, 0.0f }));
 			model.setColor(se::Color(toColor(_rootStrain)));
 			model.setMaterial(_context.materialManager.getDefaultMaterial());
-			model.setScale(glm::vec3{ 3.0f });
+			model.setScale(glm::vec3{ 6.0f });
 			_context.scene.add(model);
 		}
 		const glm::vec3 start;
