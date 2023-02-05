@@ -9,6 +9,8 @@ public:
 
 	UserSettingsWindow(DemoContext &demoContext);
 
+	void toggle() { windowOpen = !windowOpen; }
+
 private:
 
 	struct DisplayMode

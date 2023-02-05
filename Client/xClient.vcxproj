@@ -144,6 +144,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BulletManager.cpp" />
+    <ClCompile Include="ClientHud.cpp" />
     <ClCompile Include="EvilRootManager.cpp" />
     <ClCompile Include="LobbyClient.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -158,6 +159,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BulletManager.h" />
+    <ClInclude Include="ClientHud.h" />
     <ClInclude Include="EvilRootManager.h" />
     <ClInclude Include="LobbyClient.h" />
     <ClInclude Include="PlayerCharacter.h" />

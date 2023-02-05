@@ -67,7 +67,8 @@ void UserSettingsWindow::update()
 		}
 	}
 
-	if (ImGui::BeginCentered("User settings", &windowOpen))
+	const ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize;
+	if (ImGui::BeginCentered("User settings", &windowOpen, windowFlags))
 	{
 		static std::vector<DisplayMode>* localDisplayModes = nullptr;
 		localDisplayModes = &displayModes;

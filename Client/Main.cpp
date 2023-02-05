@@ -14,6 +14,7 @@
 #include "Base/UserSettingsWindow.h"
 #include "Base/Net/Packets.h"
 #include "Base/ClientUtility/SoundPlayer.h"
+#include "Client/ClientHud.h"
 #include "Client/LobbyClient.h"
 #include "Client/RootsGame.h"
 
@@ -38,6 +39,7 @@ int main(const int argc, const char** argv)
 	const std::string processFilepath = argv[0];
 	se::net::ConnectionManager2 connectionManager("Client");
 	UserSettingsWindow userSettingsWindow(demoContext);
+	ClientHud clientHud(demoContext, userSettingsWindow);
 
 	// Lobby loop
 	std::optional<LobbyResult> lobbyResult;
@@ -91,6 +93,7 @@ int main(const int argc, const char** argv)
 		}
 
 		gaem.update();
+		clientHud.update();
 
 		demoContextState.render();
 	}
