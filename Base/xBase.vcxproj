@@ -183,6 +183,7 @@
     <ClInclude Include="Net\Packets.h" />
     <ClInclude Include="PlayerAttributes.h" />
     <ClInclude Include="PrecompiledInclude.h" />
+    <ClInclude Include="RenderTopLeftHelpTooltip.h" />
     <ClInclude Include="RootStrain.h" />
     <ClInclude Include="Server\Client.h" />
     <ClInclude Include="Server\IOperatorGui.h" />

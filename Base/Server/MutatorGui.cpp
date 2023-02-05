@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Base/Server/MutatorGui.h"
 
+#include "Base/RenderTopLeftHelpTooltip.h"
 #include "Base/Net/Packets.h"
 #include "Base/MutationDatabase.h"
 #include "Base/Server/PlayerCharacterServer.h"
@@ -25,6 +26,8 @@ struct MutatorGui::Impl
 				{
 					client = context.clients.front().get();
 				}
+
+				renderTopLeftHelpTooltip("This is the loadout screen for the mechs.\nBy selecting a pilot you can see the current equipment their mech is equipped with.\nYou can then switch their weapon to another one by selecting it from the list.\nThe most effective weapon against a root is the one that matches its color.\nYou cannot see the roots yourself, so talk to your mech pilots about the color\nof the root they are facing and select the same colored weapon for that pilot.");
 
 				const ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove;
 

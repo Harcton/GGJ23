@@ -35,8 +35,8 @@ struct OperatorHud::Impl
 			text.setSize(se::gui::GUIVec2(se::gui::GUIUnit(0.8f, se::gui::GUIUnitType::Parent), se::gui::GUIUnitType::Auto));
 		}
 		backShape.setZIndex(10000);
-		backShape.setPosition(se::gui::GUIVec2(glm::vec2(0.05f), se::gui::GUIUnitType::View));
-		backShape.setAnchor(se::gui::GUIVec2(glm::vec2(0.0f), se::gui::GUIUnitType::Self));
+		backShape.setPosition(se::gui::GUIVec2(glm::vec2(0.05f, 0.95f), se::gui::GUIUnitType::View));
+		backShape.setAnchor(se::gui::GUIVec2(glm::vec2(0.0f, 1.0f), se::gui::GUIUnitType::Self));
 		backShape.setSize(se::gui::GUIVec2(glm::vec2(0.2f, 0.1f), se::gui::GUIUnitType::View));
 		backShape.setColor(se::Color(0.1f, 0.1f, 0.1f));
 		backShape.onClick([&](se::gui::GUIElement&) { operatorGui.reset(new MonitorGui(context)); backShape.setVisible(false); });

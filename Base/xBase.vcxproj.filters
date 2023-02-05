@@ -209,5 +209,8 @@
     <ClInclude Include="GlobalHud.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RenderTopLeftHelpTooltip.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

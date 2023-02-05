@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Base/Server/RadarGui.h"
 
+#include "Base/RenderTopLeftHelpTooltip.h"
 #include "Base/Net/Packets.h"
 #include "Base/Server/PlayerCharacterServer.h"
 #include "Base/Server/RootServer.h"
@@ -34,6 +35,8 @@ struct RadarGui::Impl
 		context.imguiBackend.connectToPreRenderSignal(scopedConnections.add(),
 			[this]()
 			{
+				renderTopLeftHelpTooltip("This is the radar screen.\nIt is the only way to see the entire map.\nIt shows the position of the mech pilots and the invading roots.\nFrom this screen you can watch the battle outside.\nRemember that the mech pilots cannot see the entire map, so you must verbally advise the pilots of any roots that they have missed.");
+
 				if (!context.userSettings.getDevMode())
 				{
 					return;

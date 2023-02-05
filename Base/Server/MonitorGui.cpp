@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Base/Server/MonitorGui.h"
 
+#include "Base/RenderTopLeftHelpTooltip.h"
 #include "Base/Net/Packets.h"
 #include "SpehsEngine/GUI/GUIShape.h"
 #include "SpehsEngine/GUI/GUIView.h"
@@ -81,6 +82,12 @@ struct MonitorGui::Impl
 			text.setPosition(textPosition);
 			text.setColor(se::Color(0.4f, 0.4f, 0.4f));
 		}
+
+		context.imguiBackend.connectToPreRenderSignal(scopedConnections.add(),
+			[this]()
+			{
+				renderTopLeftHelpTooltip("This is the main view of the radio-operator,\nwhere you can see the various devices you can interact with.\nClick on any of the screens to open a specific device menu.");
+			});
 	}
 
 	~Impl()
