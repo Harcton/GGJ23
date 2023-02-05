@@ -23,8 +23,9 @@ struct RadarGui::Impl
 		context.guiView.add(rootShape);
 		rootShape.setPosition(GUIVec2(0.5_view));
 		rootShape.setAnchor(0.5_self);
-		rootShape.setSize(GUIVec2(0.5_vh));
-		rootShape.setColor(se::Color(0.1f, 0.1f, 0.1f));
+		rootShape.setSize(GUIVec2(0.9_vh));
+		rootShape.setColor(se::Color(1.0f, 1.0f, 1.0f));
+		rootShape.setTexture("radar-overlay-black.png");
 		for (std::unique_ptr<Client>& client : context.clients)
 		{
 			GUIShape& shape = rootShape.addChild<se::gui::GUIShape>();
@@ -115,15 +116,14 @@ struct RadarGui::Impl
 
 	GUIShape& createRootShape(const RootServer::Root& _root)
 	{
-		const float sceneLength = glm::length(_root.start - _root.end);
 		const glm::vec2 sceneCenter = 0.5f * (_root.start + _root.end);
 		const GUIVec2 guiCenter = sceneToGuiPosition(sceneCenter);
-		const GUIUnit guiLength = sceneToGuiLength(sceneLength);
+		const GUIUnit guiLength(0.01_vh);
 		const GUIVec2 size(guiLength, guiLength);
-		GUIShape& shape = rootShape.addChild<GUIShape>();
+		GUIShape& shape = rootShape.addChild<GUIShape>(se::graphics::ShapeType::Hexagon);
 		shape.setPosition(guiCenter);
 		shape.setSize(size);
-		shape.setColor(toColor(_root.rootStrain));
+		shape.setColor(se::Color(0.3f, 1.0f, 0.0f));
 		rootShapes[_root.rootId] = &shape;
 		return shape;
 	}
