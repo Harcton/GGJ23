@@ -29,16 +29,17 @@ std::shared_ptr<AudioResource> SoundPlayer::getResource(std::string_view _audioF
 
 void SoundPlayer::init()
 {
+	audioEngine.setVoiceLimit(255u);
+	audioEngine.setDefaultDistanceAttenuation(se::audio::DistanceAttenuation::Exponential);
+	audioEngine.setDefaultAttenuationMinDistance(50.0f);
+	audioEngine.setDefaultAttenuationMaxDistance(350.0f);
+	audioEngine.setDefaultAttenuationRolloffFactor(1.2f);
+
 	sfxBus = std::make_unique<Bus>();
 	sfxBus->connect(audioEngine.getMasterBus());
 
 	musicBus = std::make_unique<Bus>();
 	musicBus->connect(audioEngine.getMasterBus());
-
-	audioEngine.setDefaultDistanceAttenuation(se::audio::DistanceAttenuation::Exponential);
-	audioEngine.setDefaultAttenuationMinDistance(50.0f);
-	audioEngine.setDefaultAttenuationMaxDistance(350.0f);
-	audioEngine.setDefaultAttenuationRolloffFactor(1.2f);
 }
 void SoundPlayer::update()
 {
