@@ -30,7 +30,7 @@ MutationDatabase::MutationDatabase()
 		mutation->mutationId = mutationId;
 		mutation->maxStacks = 1;
 		mutation->name = _name;
-		mutation->function = [](PlayerAttributes&, const uint16_t) {};
+		mutation->function = [_rootStrain](PlayerAttributes& playerAttributes, const uint16_t) { playerAttributes.rootStrainLoadout = _rootStrain; };
 		mutation->mutationCategory = MutationCategory::Loadout;
 		mutation->rootStrain.emplace(_rootStrain);
 	};

@@ -140,7 +140,6 @@ struct PlayerCharacter::Impl
 	PlayerAttributes playerAttributes;
 	se::time::Time lastShootTime;
 	glm::vec3 mouseWorldPoint{};
-	RootStrain rootStrainLoadout = RootStrain::Yellow;
 
 	std::unordered_map<ClientId, std::unique_ptr<PlayerModel>> remoteClients;
 	std::vector<std::pair<MutationId, uint16_t>> mutations;
@@ -293,8 +292,6 @@ PlayerCharacter::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 							}
 						}
 					}
-					rootStrainLoadout = *addedMutation->rootStrain;
-					model.setWeaponColor(toColor(*addedMutation->rootStrain));
 				}
 			}
 			for (std::pair<MutationId, uint16_t>& pair : mutations)
@@ -310,7 +307,7 @@ PlayerCharacter::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 			updatePlayerAttributes();
 		});
 
-	rootStrainLoadout = context.startingRootStrain;
+	playerAttributes.rootStrainLoadout = context.startingRootStrain;
 	model.setWeaponColor(toColor(context.startingRootStrain));
 }
 void PlayerCharacter::Impl::update()
@@ -349,7 +346,7 @@ void PlayerCharacter::Impl::update()
 		packet.position.y = model.getPosition().z;
 		packet.facing.x = model.getFacing().x;
 		packet.facing.y = model.getFacing().z;
-		packet.rootStrainLoadout = rootStrainLoadout;
+		packet.rootStrainLoadout = playerAttributes.rootStrainLoadout;
 		context.packetman.sendPacket(PacketType::PlayerUpdate, packet, false);
 		lastSendUpdateTime = se::time::now();
 	}
@@ -366,6 +363,7 @@ void PlayerCharacter::Impl::updatePlayerAttributes()
 			mutation->function(playerAttributes, stacks);
 		}
 	}
+	model.setWeaponColor(toColor(playerAttributes.rootStrainLoadout));
 }
 
 void PlayerCharacter::Impl::shoot()
