@@ -36,9 +36,11 @@ void SoundPlayer::init()
 	musicBus->connect(audioEngine.getMasterBus());
 
 	audioEngine.setDefaultDistanceAttenuation(se::audio::DistanceAttenuation::Exponential);
-	audioEngine.setDefaultAttenuationMinDistance(25.0f);
-	audioEngine.setDefaultAttenuationMaxDistance(250.0f);
+	audioEngine.setDefaultAttenuationMinDistance(50.0f);
+	audioEngine.setDefaultAttenuationMaxDistance(350.0f);
 	audioEngine.setDefaultAttenuationRolloffFactor(1.2f);
+
+	setMusicVolume(0.5f);
 }
 void SoundPlayer::update()
 {
@@ -118,7 +120,7 @@ SoundId SoundPlayer::playMusic(std::string_view _audioFile, se::time::Time _fade
 }
 SoundId SoundPlayer::playSound(std::string_view _audioFile, const glm::vec3& _position)
 {
-	if (glm::distance(audioEngine.getListenerPosition(), _position) > 250.0f)
+	if (glm::distance(audioEngine.getListenerPosition(), _position) > 350.0f)
 		return {};
 	auto resource = getResource(_audioFile);
 	auto& source = sources[++soundId];

@@ -67,6 +67,14 @@ struct EvilRootManager::Impl
 				}
 			}
 		}
+		void onErase()
+		{
+			context.soundPlayer.playSound("cracking.ogg", endPoint);
+			for (auto&& branch : branches)
+			{
+				branch->onErase();
+			}
+		}
 		void findAndDelete(RootRemovePacket& _packet)
 		{
 			se_assert(_packet.rootId != id);
@@ -74,7 +82,7 @@ struct EvilRootManager::Impl
 			{
 				if (branches[i]->id == _packet.rootId)
 				{
-					context.soundPlayer.playSound("cracking.ogg", branches[i]->endPoint);
+					branches[i]->onErase();
 					branches.erase(branches.begin() + i);
 					return;
 				}
@@ -98,7 +106,7 @@ struct EvilRootManager::Impl
 				head->loadModelData(context.modelDataManager.create(jointModelName, jointModelName));
 				head->setPosition(glm::vec3{ endPoint });
 				head->setRotation(glm::quatLookAt(growthDir, glm::vec3{ 0.0f, 1.0f, 0.0f }));
-				head->setScale(glm::vec3{ 1.5f });
+				head->setScale(glm::vec3{ 1.2f });
 				head->setColor(toColor(rootStrain));
 				head->setMaterial(context.materialManager.getDefaultMaterial());
 				context.scene.add(*head);
@@ -219,7 +227,7 @@ EvilRootManager::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 			{
 				if (rootData[i]->id == _packet.rootId)
 				{
-					context.soundPlayer.playSound("cracking.ogg", rootData[i]->endPoint);
+					rootData[i]->onErase();
 					rootData.erase(rootData.begin() + i);
 					return;
 				}
