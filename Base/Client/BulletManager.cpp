@@ -33,10 +33,12 @@ struct BulletManager::Impl
 			const RootStrain _rootStrain, const bool _owned)
 			: start(_pos), dir(_dir), owned(_owned), range(_range), speed(_speed), damage(_damage), rootStrain(_rootStrain)
 		{
-			model.generate(ShapeType::Ball, _context.materialManager.getDefaultShapeParams(), &_context.shapeGenerator);
+			model.loadModelData(_context.modelDataManager.create("bullet", "bullet.fbx"));
 			model.setPosition(start + glm::vec3{ 0.0f, 2.5f, 0.0f });
+			model.setRotation(glm::quatLookAt(_dir, glm::vec3{ 0.0f, 1.0f, 0.0f }));
 			model.setColor(se::Color(toColor(_rootStrain)));
 			model.setMaterial(_context.materialManager.getDefaultMaterial());
+			model.setScale(glm::vec3{ 3.0f });
 			_context.scene.add(model);
 		}
 		const glm::vec3 start;
@@ -46,7 +48,7 @@ struct BulletManager::Impl
 		const float damage;
 		const RootStrain rootStrain;
 		const bool owned;
-		Shape model;
+		Model model;
 	};
 	std::vector<std::unique_ptr<Bullet>> bullets;
 	se::ScopedConnections scopedConnections;

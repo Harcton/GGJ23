@@ -179,6 +179,8 @@ struct CombinedGame::Impl
 	{
 		serverClients.clear();
 
+		demoContext.soundPlayer.playMusic("main_theme_root_bgm.ogg", se::time::fromSeconds(2.0f));
+
 		// Lobby loop
 		const se::time::Time minFrameTime = se::time::fromSeconds(1.0f / float(60.0f));
 		{
@@ -222,6 +224,8 @@ struct CombinedGame::Impl
 		PlayerCharacterServer playerCharacterServer(serverContext);
 		RootServer rootServer(serverContext, constants::worldSize);
 		OperatorHud operatorHud(serverContext, playerCharacterServer, rootServer);
+
+		demoContext.soundPlayer.playMusic("engineer_theme_bgm.ogg", se::time::fromSeconds(2.0f));
 
 		while (true)
 		{

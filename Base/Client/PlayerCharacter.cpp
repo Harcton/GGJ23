@@ -113,7 +113,8 @@ struct PlayerCharacter::Impl
 			modelWeapon.loadModelData(
 				context.modelDataManager.create("player_weapon", "mechtank_weapon.fbx"));
 			modelWeapon.setScale(playerModelScale);
-			modelWeapon.setMaterial(weaponMat);
+			modelWeapon.setMaterial(weaponMat, 0);
+			modelWeapon.setMaterial(colorfulMat, 1);
 			context.scene.add(modelWeapon);
 
 			light.setCone(se::PI<float> *0.4f, se::PI<float> *0.6f);
@@ -326,6 +327,10 @@ void PlayerCharacter::Impl::update()
 	}
 
 	glm::vec3 position = model.getPosition() + movement * context.deltaTimeSystem.deltaSeconds;
+	if (glm::distance(position, glm::vec3{}) > (constants::worldSize * 0.5f))
+	{
+		position = glm::normalize(position) * (constants::worldSize * 0.5f);
+	}
 	model.setPosition(position);
 
 	model.setFacing(glm::normalize(mouseWorldPoint - model.getPosition()));

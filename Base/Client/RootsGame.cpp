@@ -46,11 +46,16 @@ struct RootsGame::Impl
 	EvilRootManager rootManager;
 
 	Shape ground;
-	Model core;
+	Model coreAntenna;
+	Model coreRingA;
+	Model coreRingB;
+	Model coreStructure;
 
 	AmbientLight ambientLight;
 	DirectionalLight sunLight;
 	PointLight coreLight;
+	bool panicTime = false;
+	se::time::Time started = se::time::now();
 };
 RootsGame::RootsGame(ClientContext& _context)
 	: impl(std::make_unique<Impl>(_context)) {}
@@ -112,17 +117,35 @@ RootsGame::Impl::Impl(ClientContext& _context)
 		context.scene.add(ground);
 	}
 	{
-		core.loadModelData(context.modelDataManager.create("core", "Base_Structure.fbx"));
-		core.setMaterial(context.materialManager.getDefaultMaterial());
-		core.setScale(glm::vec3{ 1.3f });
-		//core.setScale(glm::vec3{ constants::coreSize });
-		context.scene.add(core);
+		constexpr glm::vec3 actualCoreSize{ 1.3f };
+
+		auto mat = context.materialManager.getDefaultMaterial();
+		mat->setTexture(context.textureManager.create("color_gradient_dif.png", "color_gradient_dif.png"), PhongTextureType::Color);
+
+		coreStructure.loadModelData(context.modelDataManager.create("core_structure", "Base_Structure.fbx"));
+		coreStructure.setMaterial(mat);
+		coreStructure.setScale(actualCoreSize);
+		context.scene.add(coreStructure);
+
+		coreRingA.loadModelData(context.modelDataManager.create("core_ring_a", "Base_Ring_A.fbx"));
+		coreRingA.setMaterial(mat);
+		coreRingA.setScale(actualCoreSize);
+		context.scene.add(coreRingA);
+
+		coreRingB.loadModelData(context.modelDataManager.create("core_ring_b", "Base_Ring_B.fbx"));
+		coreRingB.setMaterial(mat);
+		coreRingB.setScale(actualCoreSize);
+		context.scene.add(coreRingB);
+
+		coreAntenna.loadModelData(context.modelDataManager.create("core_antenna", "Base_Antenna.fbx"));
+		coreAntenna.setMaterial(mat);
+		coreAntenna.setScale(actualCoreSize);
+		context.scene.add(coreAntenna);
 
 		coreLight.setColor(se::Color(se::DarkRed));
-		coreLight.setPosition(core.getPosition() + glm::vec3{ 0.0f, 20.0f, 0.0f });
+		coreLight.setPosition(coreStructure.getPosition() + glm::vec3{ 0.0f, 20.0f, 0.0f });
 		coreLight.setIntensity(0.8f);
 		coreLight.setRadius(1.0f, 100.0f);
-		context.scene.add(coreLight);
 	}
 
 	context.soundPlayer.playMusic("GunFightTheme_01.ogg", se::time::fromSeconds(1.0f));
@@ -133,6 +156,23 @@ bool RootsGame::Impl::update()
 	player.update();
 	bulletManager.update();
 
+	coreRingA.setRotation(
+		glm::rotate(
+			coreRingA.getRotation(),
+			se::PI<float> *context.deltaTimeSystem.deltaSeconds,
+			glm::vec3{ 0.0f, 1.0f, 0.0f }));
+
+	coreRingB.setRotation(
+		glm::rotate(
+			coreRingB.getRotation(),
+			-se::PI<float> *context.deltaTimeSystem.deltaSeconds,
+			glm::vec3{ 0.0f, 1.0f, 0.0f }));
+
+	if (!panicTime && se::time::timeSince(started) > se::time::fromSeconds(120.0))
+	{
+		panicTime = true;
+		context.scene.add(coreLight);
+	}
 	coreLight.setIntensity(glm::mix(coreLight.getIntensity(), se::rng::random(0.0f, 1.0f), 20.0f * context.deltaTimeSystem.deltaSeconds));
 
 	return true; // TODO: return false to go back to main menu
