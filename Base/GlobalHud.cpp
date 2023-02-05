@@ -53,6 +53,7 @@ struct GlobalHud::Impl
 
 	~Impl()
 	{
+		context.guiView.remove(backShape);
 		context.guiView.remove(settingsShape);
 	}
 
