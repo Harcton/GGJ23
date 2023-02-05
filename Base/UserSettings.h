@@ -6,6 +6,9 @@ p_What(glm::ivec2, Resolution, glm::ivec2(1280, 720)) \
 p_What(bool, DevMode, false) \
 p_What(bool, SkipLobby, false) \
 p_What(bool, EnableDebugOverviewWindow, false) \
+p_What(float, VolumeMaster, 1.0f) \
+p_What(float, VolumeMusic, 1.0f) \
+p_What(float, VolumeSFX, 1.0f) \
 p_What(uint8_t, DefaultTargetClientCount, 2) \
 
 
