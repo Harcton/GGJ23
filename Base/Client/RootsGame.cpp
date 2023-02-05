@@ -18,6 +18,7 @@
 #include "SpehsEngine/Graphics/TextureManager.h"
 #include "SpehsEngine/GUI/GUIView.h"
 #include "SpehsEngine/GUI/GUIShape.h"
+#include "SpehsEngine/GUI/GUIText.h"
 #include "SpehsEngine/Input/EventSignaler.h"
 #include "Base/ClientUtility/CameraController.h"
 #include "Base/ClientUtility/MaterialManager.h"
@@ -27,14 +28,39 @@
 #include "Base/Client/BulletManager.h"
 
 using namespace se::graphics;
+using namespace se::gui;
+using namespace se::gui::unit_literals;
 
 
 
 struct RootsGame::Impl
 {
 	Impl(ClientContext& _context);
-	~Impl() = default;
+	~Impl()
+	{
+		context.guiView.remove(winScreenBg);
+		context.guiView.remove(missionText);
+	}
 	bool update();
+	void showEndUI(bool win)
+	{
+		missionText.setVisible(false);
+
+		winScreenBg.setVisible(true);
+		winScreenBg.setWidth(1_view);
+		winScreenBg.setHeight(0.33_view);
+		winScreenBg.setColor(se::Color(se::Black));
+		winScreenBg.setAlignment(VerticalAlignment::Center, HorizontalAlignment::Center);
+		winScreenBg.setAnchor(VerticalAnchor::Center, HorizontalAnchor::Center);
+
+		GUIText& text = winScreenBg.addChild<GUIText>();
+		text.insert(win ? "VICTORY" : "YA'LL DEAD");
+		text.setColor(win ? se::Color(se::Gold) : se::Color(se::DarkRed));
+		text.setWidth(0.5_pw);
+		text.setFont("teko");
+		text.setAlignment(VerticalAlignment::Center, HorizontalAlignment::Center);
+		text.setAnchor(VerticalAnchor::Center, HorizontalAnchor::Center);
+	}
 
 	ClientContext& context;
 	View observerView;
@@ -46,8 +72,12 @@ struct RootsGame::Impl
 	PlayerCharacter player;
 	EvilRootManager rootManager;
 
+	GUIShape winScreenBg;
+	GUIText missionText;
+
 	Shape ground;
 	Model wall;
+	Model wallRoots;
 	Model coreAntenna;
 	Model coreRingA;
 	Model coreRingB;
@@ -58,6 +88,7 @@ struct RootsGame::Impl
 	PointLight coreLight;
 	bool panicTime = false;
 	se::time::Time started = se::time::now();
+	bool exitGame = false;
 };
 RootsGame::RootsGame(ClientContext& _context)
 	: impl(std::make_unique<Impl>(_context)) {}
@@ -78,6 +109,25 @@ RootsGame::Impl::Impl(ClientContext& _context)
 	, player(_context, bulletManager)
 	, observerView(_context.scene, observerCamera)
 {
+	context.guiView.add(winScreenBg);
+	winScreenBg.setVisible(false);
+	//winScreenBg.onClick([this](auto&){ exitGame = true; });
+	context.fontManager.create("teko", "Teko-Regular.ttf", FontSize{ 72 });
+
+	context.guiView.add(missionText);
+	missionText.setY(8_px);
+	missionText.setHeight(0.035_vh);
+	missionText.setHorizontalAnchor(HorizontalAnchor::Center);
+	missionText.setHorizontalAlignment(HorizontalAlignment::Center);
+	missionText.setFont("teko");
+
+	context.packetman.registerReceiveHandler<GameEndPacket>(
+		PacketType::GameEnd, connections.add(),
+		[this](GameEndPacket& _packet, const bool _reliable)
+		{
+			showEndUI(_packet.win);
+		});
+
 	context.scene.add(ambientLight);
 	context.scene.add(sunLight);
 
@@ -147,7 +197,7 @@ RootsGame::Impl::Impl(ClientContext& _context)
 
 		coreLight.setColor(se::Color(se::DarkRed));
 		coreLight.setPosition(coreStructure.getPosition() + glm::vec3{ 0.0f, 20.0f, 0.0f });
-		coreLight.setIntensity(0.8f);
+		coreLight.setIntensity(1.0f);
 		coreLight.setRadius(1.0f, 100.0f);
 	}
 	{
@@ -159,14 +209,25 @@ RootsGame::Impl::Impl(ClientContext& _context)
 		wall.setMaterial(mat);
 		wall.disableRenderFlags(RenderFlag::CullBackFace);
 		wall.setScale(glm::vec3{ constants::worldSize });
-		//wall.setColor(se::Color(0.1f, 0.1f, 0.1f));
 		context.scene.add(wall);
+
+		wallRoots.loadModelData(context.modelDataManager.create("wall_roots", "Roots_Wall_2.fbx"));
+		wallRoots.setMaterial(context.materialManager.getDefaultMaterial());
+		wallRoots.disableRenderFlags(RenderFlag::CullBackFace);
+		wallRoots.setScale(glm::vec3{ constants::worldSize });
+		wallRoots.setColor(constants::rootColor);
+		context.scene.add(wallRoots);
 	}
 
 	context.soundPlayer.playMusic("GunFightTheme_01.ogg", se::time::fromSeconds(1.0f));
 }
 bool RootsGame::Impl::update()
 {
+	const se::time::Time timeLeft = constants::gameWinTime - se::time::timeSince(started);
+	const float gameProgress = 1.0f - (timeLeft.asSeconds() / constants::gameWinTime.asSeconds());
+	missionText.clear();
+	missionText.insert("Mission: Defend Base! (" + std::to_string((int)timeLeft.asSeconds()) + "s)");
+
 	rootManager.update();
 	player.update();
 	bulletManager.update();
@@ -174,13 +235,13 @@ bool RootsGame::Impl::update()
 	coreRingA.setRotation(
 		glm::rotate(
 			coreRingA.getRotation(),
-			se::PI<float> *context.deltaTimeSystem.deltaSeconds,
+			se::HALF_PI<float> * gameProgress * context.deltaTimeSystem.deltaSeconds,
 			glm::vec3{ 0.0f, 1.0f, 0.0f }));
 
 	coreRingB.setRotation(
 		glm::rotate(
 			coreRingB.getRotation(),
-			-se::PI<float> *context.deltaTimeSystem.deltaSeconds,
+			-se::HALF_PI<float> * 1.2f * gameProgress * context.deltaTimeSystem.deltaSeconds,
 			glm::vec3{ 0.0f, 1.0f, 0.0f }));
 
 	if (!panicTime && se::time::timeSince(started) > se::time::fromSeconds(120.0))
@@ -190,5 +251,5 @@ bool RootsGame::Impl::update()
 	}
 	coreLight.setIntensity(glm::mix(coreLight.getIntensity(), se::rng::random(0.0f, 1.0f), 20.0f * context.deltaTimeSystem.deltaSeconds));
 
-	return true; // TODO: return false to go back to main menu
+	return !exitGame; // TODO: return false to go back to main menu
 }

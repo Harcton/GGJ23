@@ -48,7 +48,7 @@ struct EvilRootManager::Impl
 			root.loadModelData(context.modelDataManager.create(rootModelName, rootModelName));
 			root.setPosition(glm::vec3{ startPoint });
 			root.setRotation(glm::quatLookAt(growthDir, glm::vec3{0.0f, 1.0f, 0.0f}));
-			root.setColor(se::Color(0x25150BFF));
+			root.setColor(constants::rootColor);
 			root.setMaterial(context.materialManager.getDefaultMaterial());
 			context.scene.add(root);
 		}

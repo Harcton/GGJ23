@@ -100,6 +100,11 @@ struct RootServer::Impl
 
 	void update()
 	{
+		if (!gameEnded && se::time::timeSince(startTime) > constants::gameWinTime)
+		{
+			sendGameEnd(true);
+		}
+
 		constexpr se::time::Time spawnInterval = se::time::fromSeconds(5.0f);
 		if (se::time::timeSince(lastSpawnTime) > spawnInterval)
 		{
@@ -166,6 +171,11 @@ struct RootServer::Impl
 				_root.childTime = se::time::now();
 				_root.children.push_back(child);
 				sendRootCreate(child, &_root);
+
+				if (!gameEnded && (glm::distance(child.end, glm::vec2{}) < (constants::coreSize * 0.5)))
+				{
+					sendGameEnd(false);
+				}
 			}
 		}
 		for (Root& child : _root.children)
@@ -208,6 +218,21 @@ struct RootServer::Impl
 		}
 	}
 
+	void sendGameEnd(bool win)
+	{
+		se_assert(!gameEnded);
+		gameEnded = true;
+		GameEndPacket packet;
+		packet.win = win;
+
+		for (const std::unique_ptr<Client>& client : context.clients)
+		{
+			client->packetman.sendPacket<GameEndPacket>(PacketType::GameEnd, packet, true);
+		}
+	}
+
+	se::time::Time startTime = se::time::now();
+	bool gameEnded = false;
 	ServerContext& context;
 	const float worldRadius;
 	std::vector<Root> roots;
