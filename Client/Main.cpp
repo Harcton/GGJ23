@@ -13,6 +13,7 @@
 #include "Base/DemoContextState.h"
 #include "Base/UserSettingsWindow.h"
 #include "Base/Net/Packets.h"
+#include "Base/ClientUtility/SoundPlayer.h"
 #include "Client/LobbyClient.h"
 #include "Client/RootsGame.h"
 
@@ -40,6 +41,8 @@ int main(const int argc, const char** argv)
 
 	// Lobby loop
 	std::optional<LobbyResult> lobbyResult;
+
+	demoContext.soundPlayer.playMusic("main_theme_root_bgm.ogg", se::time::fromSeconds(2.0f));
 
 	{
 		LobbyClient lobbyClient(demoContext, connectionManager, processFilepath);

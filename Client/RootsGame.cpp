@@ -117,7 +117,7 @@ RootsGame::Impl::Impl(ClientContext& _context)
 		context.scene.add(core);
 	}
 
-	context.soundPlayer.playMusic("main_theme_root_bgm.ogg", se::time::fromSeconds(2.0f));
+	context.soundPlayer.playMusic("GunFightTheme_01.ogg", se::time::fromSeconds(1.0f));
 }
 void RootsGame::Impl::update()
 {
