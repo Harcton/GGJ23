@@ -138,9 +138,9 @@ struct DemoContextState::Impl
 				mainWindow.setWidth(newValue.x);
 				mainWindow.setHeight(newValue.y);
 			}, true);
-		userSettings.connectToVolumeMasterChangedSignal(scopedConnections.add(), [this](const float&, const float& newValue){ soundPlayer.setMasterVolume(newValue); });
-		userSettings.connectToVolumeMusicChangedSignal(scopedConnections.add(), [this](const float&, const float& newValue){ soundPlayer.setMusicVolume(newValue); });
-		userSettings.connectToVolumeSFXChangedSignal(scopedConnections.add(), [this](const float&, const float& newValue){ soundPlayer.setSfxVolume(newValue); });
+		userSettings.connectToVolumeMasterChangedSignal(scopedConnections.add(), [this](const float&, const float& newValue){ soundPlayer.setMasterVolume(newValue); }, true);
+		userSettings.connectToVolumeMusicChangedSignal(scopedConnections.add(), [this](const float&, const float& newValue){ soundPlayer.setMusicVolume(newValue); }, true);
+		userSettings.connectToVolumeSFXChangedSignal(scopedConnections.add(), [this](const float&, const float& newValue){ soundPlayer.setSfxVolume(newValue); }, true);
 		mainWindow.setBorderless(false);
 		mainWindow.setCenteredX();
 		mainWindow.setCenteredY();
