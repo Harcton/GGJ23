@@ -251,6 +251,10 @@ PlayerCharacter::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 					remoteModel->init(context);
 					remoteModel->setPosition(toVec3(packet.position));
 					remoteModel->setFacing(toVec3(packet.facing));
+					if (const se::Color* const color = tryFind(context.clientColors, id))
+					{
+						remoteModel->setPlayerColor(*color);
+					}
 				}
 				else
 				{
@@ -310,6 +314,10 @@ PlayerCharacter::Impl::Impl(ClientContext& _context, BulletManager& _bulletManag
 
 	playerAttributes.rootStrainLoadout = context.startingRootStrain;
 	model.setWeaponColor(toColor(context.startingRootStrain));
+	if (const se::Color* const color = tryFind(context.clientColors, context.myClientId))
+	{
+		model.setPlayerColor(*color);
+	}
 }
 void PlayerCharacter::Impl::update()
 {

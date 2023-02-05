@@ -57,6 +57,7 @@ struct LobbyServer::Impl
 								if (validateName(_packet.name))
 								{
 									client->client->name = _packet.name;
+									client->client->color = _packet.color;
 									addClient(std::move(client));
 								}
 								else
@@ -201,6 +202,10 @@ struct LobbyServer::Impl
 			}
 		}
 		LobbyStartPacket packet;
+		for (const std::unique_ptr<LobbyClient>& client : clients)
+		{
+			packet.clientColors[client->client->clientId] = client->client->color;
+		}
 		for (const std::unique_ptr<LobbyClient>& client : clients)
 		{
 			client->client->packetman.sendPacket(PacketType::LobbyStart, packet, true);

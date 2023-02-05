@@ -152,6 +152,7 @@ struct CombinedGame::Impl
 			sessionPacketman,
 			lobbyResult->myClientId,
 			lobbyResult->startingRootStrain,
+			lobbyResult->lobbyStartPacket.clientColors,
 		};
 		RootsGame gaem(clientContext);
 

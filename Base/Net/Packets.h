@@ -25,13 +25,16 @@ struct LobbyEnterPacket
 	void write(se::WriteBuffer& writeBuffer) const
 	{
 		se_write(writeBuffer, name);
+		se_write(writeBuffer, color);
 	}
 	bool read(se::ReadBuffer& readBuffer)
 	{
 		se_read(readBuffer, name);
+		se_read(readBuffer, color);
 		return true;
 	}
 	std::string name;
+	se::Color color;
 };
 
 struct LobbyEnterResult
@@ -72,13 +75,16 @@ struct LobbyStartPacket
 	void write(se::WriteBuffer& writeBuffer) const
 	{
 		se_write(writeBuffer, data);
+		se_write(writeBuffer, clientColors);
 	}
 	bool read(se::ReadBuffer& readBuffer)
 	{
 		se_read(readBuffer, data);
+		se_read(readBuffer, clientColors);
 		return true;
 	}
 	bool data = false;
+	std::unordered_map<ClientId, se::Color> clientColors;
 };
 
 // Client <-> server

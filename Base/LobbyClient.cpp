@@ -13,6 +13,7 @@ struct LobbyClient::Impl
 		: context(_context)
 	{
 		name = "Player #" + std::to_string(se::rng::random<uint16_t>());
+		playerColor = se::Color(1.0f, 1.0f, 1.0f);
 		context.imguiBackend.connectToPreRenderSignal(scopedConnections.add(), [this]()
 			{
 				render();
@@ -58,6 +59,7 @@ struct LobbyClient::Impl
 			else
 			{
 				ImGui::InputT("Name", name);
+				ImGui::InputT("Color", playerColor);
 				ImGui::InputT("Server address", address);
 				if (ImGui::Button("Connect to server") || context.userSettings.getSkipLobby())
 				{
@@ -74,6 +76,7 @@ struct LobbyClient::Impl
 									packetman.reset(new se::net::Packetman<PacketType>(*connection));
 									LobbyEnterPacket packet;
 									packet.name = name;
+									packet.color = playerColor;
 									packetman->sendPacket<LobbyEnterPacket, LobbyEnterResult>(PacketType::LobbyEnter, packet, scopedConnections.add(),
 										[this](LobbyEnterResult* const _result)
 										{
@@ -85,7 +88,7 @@ struct LobbyClient::Impl
 												packetman->registerReceiveHandler<LobbyStartPacket>(PacketType::LobbyStart, scopedConnections.add(),
 													[this](LobbyStartPacket& _packet, const bool _reliable)
 													{
-														startRequested = true;
+														lobbyStartPacket.emplace(_packet);
 													});
 												if (context.userSettings.getSkipLobby())
 												{
@@ -125,12 +128,13 @@ struct LobbyClient::Impl
 
 	std::optional<LobbyResult> getResult() const
 	{
-		if (startRequested)
+		if (lobbyStartPacket)
 		{
 			LobbyResult result;
 			result.connection = connection;
 			result.myClientId = myClientId;
 			result.startingRootStrain = startingRootStrain;
+			result.lobbyStartPacket = *lobbyStartPacket;
 			return result;
 		}
 		else
@@ -145,10 +149,11 @@ struct LobbyClient::Impl
 	std::unique_ptr<se::net::Packetman<PacketType>> packetman;
 	std::string name;
 	std::string address = "127.0.0.1";
+	se::Color playerColor;
 	ClientId myClientId;
 	RootStrain startingRootStrain = RootStrain::Blue;
 	bool ready = false;
-	bool startRequested = false;
+	std::optional<LobbyStartPacket> lobbyStartPacket;
 };
 
 LobbyClient::LobbyClient(DemoContext& _context)

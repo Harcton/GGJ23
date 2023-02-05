@@ -20,4 +20,5 @@ struct ClientContext : public DemoContext
 	se::net::Packetman<PacketType>& packetman;
 	const ClientId myClientId;
 	const RootStrain startingRootStrain;
+	const std::unordered_map<ClientId, se::Color> clientColors;
 };

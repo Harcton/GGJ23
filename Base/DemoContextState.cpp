@@ -122,6 +122,14 @@ struct DemoContextState::Impl
 
 		mainWindow.add(guiView.getView());
 
+		se::graphics::TextureInput textureInput;
+		textureInput.width = 1;
+		textureInput.height = 1;
+		textureInput.data = { 255, 255, 255, 255 };
+		constexpr se::graphics::TextureModes pointTextureModes
+			{ se::graphics::TextureWrappingMode::Repeat, se::graphics::TextureWrappingMode::Repeat, se::graphics::TextureWrappingMode::Repeat,
+			  se::graphics::TextureSamplingMode::Linear,  se::graphics::TextureSamplingMode::Linear,  se::graphics::TextureSamplingMode::Linear };
+		textureManager.create("data/assets/texture/gene-sequencer.png", textureInput, pointTextureModes);
 
 		///////////////
 		// Audio
