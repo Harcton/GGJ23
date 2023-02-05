@@ -8,7 +8,7 @@ class RootsGame
 public:
 	RootsGame(ClientContext& _context);
 	~RootsGame();
-	void update();
+	bool update();
 private:
 	struct Impl;
 	std::unique_ptr<Impl> impl;

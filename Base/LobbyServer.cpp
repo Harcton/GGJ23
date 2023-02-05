@@ -23,13 +23,12 @@ struct LobbyServer::Impl
 		boost::signals2::scoped_connection readyConnection;
 		bool ready = false;
 	};
-	Impl(DemoContext& _context, se::net::ConnectionManager2& _connectionManager)
+	Impl(DemoContext& _context)
 		: context(_context)
-		, connectionManager(_connectionManager)
 		, targetClientCount(std::max(uint8_t(1), _context.userSettings.getDefaultTargetClientCount()))
 	{
-		connectionManager.startAcceptingIP(se::net::Port(41623));
-		connectionManager.connectToIncomingConnectionSignal(scopedConnections.add(),
+		context.connectionManager.startAcceptingIP(se::net::Port(41623));
+		context.connectionManager.connectToIncomingConnectionSignal(scopedConnections.add(),
 			[this](std::shared_ptr<se::net::Connection2>& _connection)
 			{
 				if (clients.size() + connectingClients.size() >= targetClientCount)
@@ -211,7 +210,6 @@ struct LobbyServer::Impl
 	}
 
 	DemoContext& context;
-	se::net::ConnectionManager2& connectionManager;
 	uint8_t targetClientCount = 1;
 	se::ScopedConnections scopedConnections;
 	std::vector<std::unique_ptr<LobbyClient>> connectingClients;
@@ -219,8 +217,8 @@ struct LobbyServer::Impl
 	ClientId nextClientId = ClientId(1);
 };
 
-LobbyServer::LobbyServer(DemoContext& _context, se::net::ConnectionManager2& _connectionManager)
-	: impl(new Impl(_context, _connectionManager))
+LobbyServer::LobbyServer(DemoContext& _context)
+	: impl(new Impl(_context))
 {
 }
 

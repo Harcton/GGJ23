@@ -9,12 +9,14 @@
 
 struct LobbyClient::Impl
 {
-	Impl(DemoContext& _context, se::net::ConnectionManager2& _connectionManager, const std::string _processFilepath)
+	Impl(DemoContext& _context)
 		: context(_context)
-		, connectionManager(_connectionManager)
-		, processFilepath(_processFilepath)
 	{
 		name = "Player #" + std::to_string(se::rng::random<uint16_t>());
+		context.imguiBackend.connectToPreRenderSignal(scopedConnections.add(), [this]()
+			{
+				render();
+			});
 	}
 
 	void update()
@@ -55,7 +57,7 @@ struct LobbyClient::Impl
 				ImGui::InputT("Server address", address);
 				if (ImGui::Button("Connect to server") || context.userSettings.getSkipLobby())
 				{
-					connection = connectionManager.connectIP(se::net::Endpoint(se::net::Address(address), se::net::Port(41623)), false, "Client");
+					connection = context.connectionManager.connectIP(se::net::Endpoint(se::net::Address(address), se::net::Port(41623)), false, "Client");
 					if (connection)
 					{
 						connection->connectToStatusChangedSignal(scopedConnections.add(),
@@ -105,7 +107,7 @@ struct LobbyClient::Impl
 			}
 			if (ImGui::Button("Launch another client"))
 			{
-				se::createProcess(processFilepath, "");
+				se::createProcess(context.processFilepath, "");
 			}
 		}
 	}
@@ -134,8 +136,6 @@ struct LobbyClient::Impl
 	}
 
 	DemoContext& context;
-	se::net::ConnectionManager2& connectionManager;
-	const std::string processFilepath;
 	se::ScopedConnections scopedConnections;
 	std::shared_ptr<se::net::Connection2> connection;
 	std::unique_ptr<se::net::Packetman<PacketType>> packetman;
@@ -147,8 +147,8 @@ struct LobbyClient::Impl
 	bool startRequested = false;
 };
 
-LobbyClient::LobbyClient(DemoContext& _context, se::net::ConnectionManager2& _connectionManager, const std::string _processFilepath)
-	: impl(new Impl(_context, _connectionManager, _processFilepath))
+LobbyClient::LobbyClient(DemoContext& _context)
+	: impl(new Impl(_context))
 {
 }
 
@@ -160,11 +160,6 @@ LobbyClient::~LobbyClient()
 void LobbyClient::update()
 {
 	impl->update();
-}
-
-void LobbyClient::render()
-{
-	impl->render();
 }
 
 std::optional<LobbyResult> LobbyClient::getResult() const

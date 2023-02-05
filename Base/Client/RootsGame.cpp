@@ -33,7 +33,7 @@ struct RootsGame::Impl
 {
 	Impl(ClientContext& _context);
 	~Impl() = default;
-	void update();
+	bool update();
 
 	ClientContext& context;
 	View observerView;
@@ -56,9 +56,9 @@ RootsGame::RootsGame(ClientContext& _context)
 	: impl(std::make_unique<Impl>(_context)) {}
 RootsGame::~RootsGame()
 {}
-void RootsGame::update()
+bool RootsGame::update()
 {
-	impl->update();
+	return impl->update();
 }
 
 
@@ -127,11 +127,13 @@ RootsGame::Impl::Impl(ClientContext& _context)
 
 	context.soundPlayer.playMusic("GunFightTheme_01.ogg", se::time::fromSeconds(1.0f));
 }
-void RootsGame::Impl::update()
+bool RootsGame::Impl::update()
 {
 	rootManager.update();
 	player.update();
 	bulletManager.update();
 
 	coreLight.setIntensity(glm::mix(coreLight.getIntensity(), se::rng::random(0.0f, 1.0f), 20.0f * context.deltaTimeSystem.deltaSeconds));
+
+	return true; // TODO: return false to go back to main menu
 }

@@ -14,7 +14,7 @@ namespace se
 class LobbyServer
 {
 public:
-	LobbyServer(DemoContext& _context, se::net::ConnectionManager2& _connectionManager);
+	LobbyServer(DemoContext& _context);
 	~LobbyServer();
 
 	void update();

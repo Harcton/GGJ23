@@ -7,7 +7,7 @@ class UserSettingsWindow
 {
 public:
 
-	UserSettingsWindow(DemoContext &demoContext);
+	UserSettingsWindow(EngineContext& _context, UserSettings& _userSettings);
 
 	void toggle() { windowOpen = !windowOpen; }
 
@@ -21,7 +21,8 @@ private:
 	};
 	void update();
 
-	DemoContext& context;
+	EngineContext& context;
+	UserSettings& userSettings;
 	bool windowOpen = false;
 	size_t displayModeIndex = 0;
 	std::vector<DisplayMode> displayModes;

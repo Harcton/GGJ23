@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Base/Client/ClientHud.h"
+#include "Base/GlobalHud.h"
 
 #include "SpehsEngine/GUI/GuiView.h"
 #include "SpehsEngine/GUI/GUIShape.h"
@@ -11,9 +11,9 @@ using namespace se::gui;
 using namespace se::gui::unit_literals;
 
 
-struct ClientHud::Impl
+struct GlobalHud::Impl
 {
-	Impl(DemoContext& _context, UserSettingsWindow& _userSettingsWindow)
+	Impl(EngineContext& _context, UserSettingsWindow& _userSettingsWindow)
 		: context(_context)
 		, userSettingsWindow(_userSettingsWindow)
 	{
@@ -43,22 +43,22 @@ struct ClientHud::Impl
 	{
 	}
 
-	DemoContext& context;
+	EngineContext& context;
 	UserSettingsWindow& userSettingsWindow;
 	se::gui::GUIShape settingsShape;
 };
 
-ClientHud::ClientHud(DemoContext& _context, UserSettingsWindow& _userSettingsWindow)
+GlobalHud::GlobalHud(EngineContext& _context, UserSettingsWindow& _userSettingsWindow)
 	: impl(new Impl(_context, _userSettingsWindow))
 {
 }
 
-ClientHud::~ClientHud()
+GlobalHud::~GlobalHud()
 {
 	// ~Impl()
 }
 
-void ClientHud::update()
+void GlobalHud::update()
 {
 	impl->update();
 }

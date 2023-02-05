@@ -24,24 +24,64 @@
 #include "SpehsEngine/Input/EventCatcher.h"
 #include "SpehsEngine/Input/EventSignaler.h"
 #include "SpehsEngine/Input/InputManager.h"
+#include "SpehsEngine/Net/ConnectionManager2.h"
 #include "Base/ClientUtility/MaterialManager.h"
 #include "Base/ClientUtility/SoundPlayer.h"
 #include "Base/UserSettings.h"
+#include "Base/UserSettingsWindow.h"
+#include "Base/GlobalHud.h"
 #pragma optimize("", off)
 
 struct DemoContextState::Impl
 {
 
-	Impl(const std::string_view _windowName)
-		: mainWindow(true)
+	Impl(const std::string_view _windowName, const std::string_view _processFilepath)
+		: processFilepath(_processFilepath)
+		, mainWindow(true)
 		, renderer(mainWindow, se::graphics::RendererFlag::VSync /*| se::graphics::RendererFlag::MSAA4*/, se::graphics::RendererBackend::Direct3D11)
-		, userSettings(_windowName)
 		, view(scene, camera)
 		, guiView(shaderManager, textureManager, fontManager, eventSignaler, 9001)
 		, imguiBackend(eventSignaler, 0, renderer)
 		, imGraphics(view, shaderManager, textureManager, fontManager, modelDataManager, shapeGenerator)
+		, connectionManager(_windowName)
+		, engineContext
+		{
+			processFilepath,
+			deltaTimeSystem,
+			eventCatcher,
+			inputManager,
+			eventSignaler,
+			mainWindow,
+			renderer,
+			scene,
+			camera,
+			view,
+			shaderManager,
+			textureManager,
+			fontManager,
+			modelDataManager,
+			shapeGenerator,
+			imGraphics,
+			guiView,
+			imguiBackend,
+			audioEngine,
+			audioManager,
+			connectionManager,
+		}
+		, userSettings(_windowName)
 		, materialManager(shaderManager, textureManager)
 		, soundPlayer(audioManager, audioEngine)
+		, userSettingsWindow(engineContext, userSettings)
+		, globalHud(engineContext, userSettingsWindow)
+		, demoContext
+		{
+			engineContext,
+			mutationDatabase,
+			userSettings,
+			materialManager,
+			soundPlayer,
+			globalHud,
+		}
 	{
 		se::time::ScopeTimer initTimer;
 
@@ -133,6 +173,8 @@ struct DemoContextState::Impl
 	{
 		deltaTimeSystem.update();
 		userSettings.update();
+		connectionManager.update();
+		globalHud.update();
 
 		shaderManager.update();
 		textureManager.update();
@@ -162,36 +204,12 @@ struct DemoContextState::Impl
 
 	DemoContext getDemoContext()
 	{
-		return DemoContext
-		{
-			deltaTimeSystem,
-			eventCatcher,
-			inputManager,
-			eventSignaler,
-			mainWindow,
-			renderer,
-			scene,
-			camera,
-			view,
-			shaderManager,
-			textureManager,
-			fontManager,
-			modelDataManager,
-			shapeGenerator,
-			imGraphics,
-			mutationDatabase,
-			userSettings,
-			guiView,
-			imguiBackend,
-			audioEngine,
-			audioManager,
-			materialManager,
-			soundPlayer,
-		};
+		return demoContext;
 	}
 
+	const std::string processFilepath;
+
 	se::time::DeltaTimeSystem deltaTimeSystem;
-	UserSettings userSettings;
 
 	// Input
 	se::input::EventCatcher eventCatcher;
@@ -220,20 +238,28 @@ struct DemoContextState::Impl
 	se::audio::AudioEngine audioEngine;
 	se::audio::AudioManager audioManager;
 
+	se::net::ConnectionManager2 connectionManager;
+
+	EngineContext engineContext;
 
 	// GAME:
 
 
-	se::ScopedConnections scopedConnections;
+	UserSettings userSettings;
 
 	MutationDatabase mutationDatabase;
 
 	MaterialManager materialManager;
 	SoundPlayer soundPlayer;
+	GlobalHud globalHud;
+	DemoContext demoContext;
+
+	UserSettingsWindow userSettingsWindow;
+	se::ScopedConnections scopedConnections;
 };
 
-DemoContextState::DemoContextState(const std::string_view _windowName)
-	: impl(new Impl(_windowName))
+DemoContextState::DemoContextState(const std::string_view _windowName, const std::string_view _processFilepath)
+	: impl(new Impl(_windowName, _processFilepath))
 {
 }
 

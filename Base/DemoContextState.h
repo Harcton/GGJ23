@@ -6,7 +6,7 @@
 class DemoContextState
 {
 public:
-	DemoContextState(const std::string_view _windowName);
+	DemoContextState(const std::string_view _windowName, const std::string_view _processFilepath);
 	~DemoContextState();
 
 	void reset();

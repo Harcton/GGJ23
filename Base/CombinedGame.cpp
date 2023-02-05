@@ -1,12 +1,12 @@
 #include "stdafx.h"
 #include "Base/CombinedGame.h"
 
-#include "Base/Client/ClientHud.h"
 #include "Base/Client/RootsGame.h"
 #include "Base/ClientUtility/SoundPlayer.h"
 #include "Base/DemoContextState.h"
 #include "Base/LobbyClient.h"
 #include "Base/LobbyServer.h"
+#include "Base/MainMenu.h"
 #include "Base/Net/Packets.h"
 #include "Base/Server/OperatorHud.h"
 #include "Base/Server/PacketBroadcaster.h"
@@ -20,71 +20,90 @@
 #include "SpehsEngine/GUI/GUILib.h"
 #include "SpehsEngine/Input/InputLib.h"
 #include "SpehsEngine/Math/MathLib.h"
-#include "SpehsEngine/Net/ConnectionManager2.h"
 #include "SpehsEngine/Net/NetLib.h"
 #include "SpehsEngine/Net/Packetman.h"
 #include "SpehsEngine/Physics/PhysicsLib.h"
 
 
-
 struct CombinedGame::Impl
 {
-	Impl(const std::string& _processFilepath, const bool _runClient)
+	static constexpr se::time::Time minFrameTime = se::time::fromSeconds(1.0f / float(120.0f));
+
+	Impl(const std::string& _processFilepath, const std::string& _windowName, const StateTransition _stateTransition)
 		: processFilepath(_processFilepath)
 		, net(core)
 		, math(core)
 		, physics(math)
 		, debug(gui)
-		, demoContextState("Client")
+		, demoContextState(_windowName, _processFilepath)
 		, demoContext(demoContextState.getDemoContext())
 	{
-		if (_runClient)
+		StateTransition stateTransition = _stateTransition;
+		if (_stateTransition == StateTransition::ServerLobby)
 		{
-			runClient();
+			demoContext.mainWindow.setX(0);
+			demoContext.mainWindow.setY(32);
 		}
-		else
+
+		while (true)
 		{
-			runServer();
+			switch (stateTransition)
+			{
+			case StateTransition::Client: stateTransition = runClient(); break;
+			case StateTransition::ClientLobby: stateTransition = runClientLobby(); break;
+			case StateTransition::Server: stateTransition = runServer(); break;
+			case StateTransition::ServerLobby: stateTransition = runServerLobby(); break;
+			case StateTransition::Quit: return;
+			}
 		}
 	}
 
-	void runClient()
+	StateTransition runMainMenu()
 	{
-		constexpr se::time::Time minFrameTime = se::time::fromSeconds(1.0f / float(120.0f));
-
-		se::net::ConnectionManager2 connectionManager("Client");
-		UserSettingsWindow userSettingsWindow(demoContext);
-		ClientHud clientHud(demoContext, userSettingsWindow);
-
-		// Lobby loop
-		std::optional<LobbyResult> lobbyResult;
-
+		MainMenu mainMenu(demoContext);
 		demoContext.soundPlayer.playMusic("main_theme_root_bgm.ogg", se::time::fromSeconds(2.0f));
+	}
 
+	StateTransition runClientLobby()
+	{
+		// Lobby loop
+		lobbyResult.reset();
+
+		LobbyClient lobbyClient(demoContext);
+		while (true)
 		{
-			LobbyClient lobbyClient(demoContext, connectionManager, processFilepath);
-			while (true)
+			SE_SCOPE_PROFILER("Frame");
+			const se::time::ScopedFrameLimiter frameLimiter(minFrameTime);
+			
+			lobbyClient.update();
+			if (!demoContextState.update())
 			{
-				SE_SCOPE_PROFILER("Frame");
-				const se::time::ScopedFrameLimiter frameLimiter(minFrameTime);
+				return StateTransition::Quit;
+			}
+			lobbyClient.update();
+			demoContextState.render();
 
-				connectionManager.update();
-				if (!demoContextState.update())
+			lobbyResult = lobbyClient.getResult();
+			if (lobbyResult)
+			{
+				if (lobbyResult->myClientId)
 				{
-					return;
+					return StateTransition::Client;
 				}
-				lobbyClient.update();
-				lobbyClient.render();
-				demoContextState.render();
-
-				lobbyResult = lobbyClient.getResult();
-				if (lobbyResult)
+				else
 				{
-					break;
+					return StateTransition::MainMenu;
 				}
 			}
 		}
+	}
 
+	StateTransition runClient()
+	{
+		if (!lobbyResult)
+		{
+			return StateTransition::MainMenu;
+		}
 		se::net::Packetman<PacketType> sessionPacketman(*lobbyResult->connection);
 		ClientContext clientContext
 		{
@@ -101,59 +120,56 @@ struct CombinedGame::Impl
 			SE_SCOPE_PROFILER("Frame");
 			const se::time::ScopedFrameLimiter frameLimiter(minFrameTime);
 
-			connectionManager.update();
 			if (!demoContextState.update())
 			{
-				break;
+				return StateTransition::Quit;
 			}
 
-			gaem.update();
-			clientHud.update();
+			if (!gaem.update())
+			{
+				return StateTransition::MainMenu;
+			}
 
 			demoContextState.render();
 		}
 	}
 
-	void runServer()
+	StateTransition runServerLobby()
 	{
-		demoContext.mainWindow.setX(0);
-		demoContext.mainWindow.setY(32);
-
-		se::ScopedConnections scopedConnections;
-		se::net::ConnectionManager2 connectionManager("server");
-		UserSettingsWindow userSettingsWindow(demoContext);
+		serverClients.clear();
 
 		// Lobby loop
 		const se::time::Time minFrameTime = se::time::fromSeconds(1.0f / float(60.0f));
-		std::vector<std::unique_ptr<Client>> clients;
 		{
-			LobbyServer lobbyServer(demoContext, connectionManager);
+			LobbyServer lobbyServer(demoContext);
 			while (true)
 			{
 				SE_SCOPE_PROFILER("Frame");
 				const se::time::ScopedFrameLimiter frameLimiter(minFrameTime);
 
-				connectionManager.update();
 				if (!demoContextState.update())
 				{
-					break;
+					return StateTransition::Quit;
 				}
 				lobbyServer.update();
 				lobbyServer.render();
 				demoContextState.render();
 
-				if (lobbyServer.getReadyClients(clients))
+				if (lobbyServer.getReadyClients(serverClients))
 				{
-					break;
+					return StateTransition::Server;
 				}
 			}
 		}
+	}
 
+	StateTransition runServer()
+	{
 		// Game loop
 		ServerContext serverContext
 		{
 			demoContext,
-			clients,
+			serverClients,
 		};
 		PacketBroadcaster packetBroadcaster(serverContext);
 		PlayerCharacterServer playerCharacterServer(serverContext);
@@ -165,16 +181,18 @@ struct CombinedGame::Impl
 			SE_SCOPE_PROFILER("Frame");
 			const se::time::ScopedFrameLimiter frameLimiter(minFrameTime);
 
-			connectionManager.update();
 			rootServer.update();
 			operatorHud.update();
 			playerCharacterServer.update();
 			if (!demoContextState.update())
 			{
-				break;
+				return StateTransition::Quit;
 			}
 
 			demoContextState.render();
+
+			// TODO: returning to main menu somehow
+			//return StateTransition::MainMenu;
 		}
 	}
 
@@ -189,10 +207,12 @@ struct CombinedGame::Impl
 	se::debug::DebugLib debug;
 	DemoContextState demoContextState;
 	DemoContext demoContext;
+	std::optional<LobbyResult> lobbyResult;
+	std::vector<std::unique_ptr<Client>> serverClients;
 };
 
-CombinedGame::CombinedGame(const std::string& _processFilepath, const bool _runClient)
-	: impl(new Impl(_processFilepath, _runClient))
+CombinedGame::CombinedGame(const std::string& _processFilepath, const std::string& _windowName, const StateTransition _stateTransition)
+	: impl(new Impl(_processFilepath, _windowName, _stateTransition))
 {
 }
 

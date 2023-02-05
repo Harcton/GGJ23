@@ -3,11 +3,11 @@
 class UserSettingsWindow;
 
 
-class ClientHud
+class GlobalHud
 {
 public:
-	ClientHud(DemoContext& _context, UserSettingsWindow& _userSettingsWindow);
-	~ClientHud();
+	GlobalHud(EngineContext& _context, UserSettingsWindow& _userSettingsWindow);
+	~GlobalHud();
 	void update();
 private:
 	struct Impl;

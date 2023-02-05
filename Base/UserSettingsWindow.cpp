@@ -11,8 +11,9 @@
 
 const uint32_t currentVersion = 0;
 
-UserSettingsWindow::UserSettingsWindow(DemoContext& _demoContext)
-	: context(_demoContext)
+UserSettingsWindow::UserSettingsWindow(EngineContext& _context, UserSettings& _userSettings)
+	: context(_context)
+	, userSettings(_userSettings)
 {
 	context.imguiBackend.connectToPreRenderSignal(scopedConnections.add(),
 		[this]()
@@ -55,7 +56,7 @@ void UserSettingsWindow::update()
 			}
 			if (add)
 			{
-				if (mode.width == context.userSettings.getResolution().x && mode.height == context.userSettings.getResolution().y)
+				if (mode.width == userSettings.getResolution().x && mode.height == userSettings.getResolution().y)
 				{
 					displayModeIndex = displayModes.size();
 				}
@@ -93,35 +94,35 @@ void UserSettingsWindow::update()
 		{
 			displayModeIndex = size_t(currentDisplayModeIndex);
 			const DisplayMode& displayMode = displayModes[displayModeIndex];
-			context.userSettings.setResolution(glm::ivec2(displayMode.width, displayMode.height));
+			userSettings.setResolution(glm::ivec2(displayMode.width, displayMode.height));
 		}
 		{
-			float value = context.userSettings.getVolumeMaster() * 100.0f;
+			float value = userSettings.getVolumeMaster() * 100.0f;
 			if (ImGui::DragFloat("Master volume", &value, 1.0f, 0.0f, 100.0f, "%.0f %%", 1.0f))
 			{
-				context.userSettings.setVolumeMaster(glm::clamp(value, 0.0f, 100.0f) / 100.0f);
+				userSettings.setVolumeMaster(glm::clamp(value, 0.0f, 100.0f) / 100.0f);
 			}
 		}
 		{
-			float value = context.userSettings.getVolumeMusic() * 100.0f;
+			float value = userSettings.getVolumeMusic() * 100.0f;
 			if (ImGui::DragFloat("Music volume", &value, 1.0f, 0.0f, 100.0f, "%.0f %%", 1.0f))
 			{
-				context.userSettings.setVolumeMusic(glm::clamp(value, 0.0f, 100.0f) / 100.0f);
+				userSettings.setVolumeMusic(glm::clamp(value, 0.0f, 100.0f) / 100.0f);
 			}
 		}
 		{
-			float value = context.userSettings.getVolumeSFX() * 100.0f;
+			float value = userSettings.getVolumeSFX() * 100.0f;
 			if (ImGui::DragFloat("SFX volume", &value, 1.0f, 0.0f, 100.0f, "%.0f %%", 1.0f))
 			{
-				context.userSettings.setVolumeSFX(glm::clamp(value, 0.0f, 100.0f) / 100.0f);
+				userSettings.setVolumeSFX(glm::clamp(value, 0.0f, 100.0f) / 100.0f);
 			}
 		}
 //#define RENDER(p_Type, p_Name, p_DefaultValue) \
 //		{ \
-//			p_Type value = context.userSettings.get##p_Name(); \
-//			if (ImGui::InputT(context.userSettings.get##p_Name##OptionName(), value)) \
+//			p_Type value = userSettings.get##p_Name(); \
+//			if (ImGui::InputT(userSettings.get##p_Name##OptionName(), value)) \
 //			{ \
-//				context.userSettings.set##p_Name(value); \
+//				userSettings.set##p_Name(value); \
 //			} \
 //		}
 //		FOR_EACH_USER_SETTING(RENDER)

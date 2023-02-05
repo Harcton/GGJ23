@@ -132,14 +132,15 @@
     <ClCompile Include="ClientUtility\MaterialManager.cpp" />
     <ClCompile Include="ClientUtility\SoundPlayer.cpp" />
     <ClCompile Include="Client\BulletManager.cpp" />
-    <ClCompile Include="Client\ClientHud.cpp" />
     <ClCompile Include="Client\EvilRootManager.cpp" />
     <ClCompile Include="Client\PlayerCharacter.cpp" />
     <ClCompile Include="Client\RootsGame.cpp" />
     <ClCompile Include="CombinedGame.cpp" />
     <ClCompile Include="DemoContextState.cpp" />
+    <ClCompile Include="GlobalHud.cpp" />
     <ClCompile Include="LobbyClient.cpp" />
     <ClCompile Include="LobbyServer.cpp" />
+    <ClCompile Include="MainMenu.cpp" />
     <ClCompile Include="MutationDatabase.cpp" />
     <ClCompile Include="Server\MonitorGui.cpp" />
     <ClCompile Include="Server\MutatorGui.cpp" />
@@ -164,7 +165,6 @@
     <ClInclude Include="ClientUtility\SoundPlayer.h" />
     <ClInclude Include="Client\BulletManager.h" />
     <ClInclude Include="Client\ClientContext.h" />
-    <ClInclude Include="Client\ClientHud.h" />
     <ClInclude Include="Client\EvilRootManager.h" />
     <ClInclude Include="Client\PlayerCharacter.h" />
     <ClInclude Include="Client\RootsGame.h" />
@@ -173,8 +173,11 @@
     <ClInclude Include="DefaultResourcePathFinders.h" />
     <ClInclude Include="DemoContext.h" />
     <ClInclude Include="DemoContextState.h" />
+    <ClInclude Include="EngineContext.h" />
+    <ClInclude Include="GlobalHud.h" />
     <ClInclude Include="LobbyClient.h" />
     <ClInclude Include="LobbyServer.h" />
+    <ClInclude Include="MainMenu.h" />
     <ClInclude Include="MutationCategory.h" />
     <ClInclude Include="MutationDatabase.h" />
     <ClInclude Include="Net\Packets.h" />
