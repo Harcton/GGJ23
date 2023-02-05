@@ -1,9 +1,9 @@
 #include "stdafx.h"
-#include "Server/RadarGui.h"
+#include "Base/Server/RadarGui.h"
 
 #include "Base/Net/Packets.h"
-#include "Server/PlayerCharacterServer.h"
-#include "Server/RootServer.h"
+#include "Base/Server/PlayerCharacterServer.h"
+#include "Base/Server/RootServer.h"
 #include "SpehsEngine/GUI/GUIShape.h"
 #include "SpehsEngine/GUI/GUIView.h"
 #pragma optimize("", off)

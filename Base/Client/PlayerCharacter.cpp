@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Client/PlayerCharacter.h"
+#include "Base/Client/PlayerCharacter.h"
 
 #include "SpehsEngine/Graphics/Animator.h"
 #include "SpehsEngine/Graphics/Model.h"
@@ -16,9 +16,9 @@
 #include "Base/Net/Packets.h"
 #include "Base/ClientUtility/MaterialManager.h"
 #include "Base/ClientUtility/CameraController.h"
+#include "Base/Client/BulletManager.h"
 #include "Base/PlayerAttributes.h"
 #include "Base/MutationDatabase.h"
-#include "Client/BulletManager.h"
 #include <glm/gtx/rotate_vector.hpp>
 #pragma optimize("", off)
 using namespace se::graphics;

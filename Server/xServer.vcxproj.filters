@@ -13,66 +13,9 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LobbyServer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PlayerCharacterServer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PacketBroadcaster.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RadarGui.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RootServer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MutatorGui.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MonitorGui.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="OperatorHud.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LobbyServer.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Client.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PlayerCharacterServer.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ServerContext.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PacketBroadcaster.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RadarGui.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RootServer.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MutatorGui.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MonitorGui.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IOperatorGui.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OperatorHud.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,8 +1,8 @@
 #include "stdafx.h"
-#include "Server/LobbyServer.h"
+#include "Base/LobbyServer.h"
 
 #include "Base/Net/Packets.h"
-#include "Server/Client.h"
+#include "Base/Server/Client.h"
 #include "SpehsEngine/Net/ConnectionManager2.h"
 #include "SpehsEngine/Net/Packetman.h"
 #pragma optimize("", off)

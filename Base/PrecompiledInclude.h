@@ -10,5 +10,7 @@
 #include "Base/UserSettings.h"
 #include "Base/MutationCategory.h"
 #include "Base/ClientUtility/SomeUtilities.h"
+#include "Base/Client/ClientContext.h"
+#include "Base/Server/ServerContext.h"
 
 enum class PacketType : uint8_t;

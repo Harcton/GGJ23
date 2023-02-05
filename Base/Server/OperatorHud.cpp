@@ -1,12 +1,12 @@
 #include "stdafx.h"
-#include "Server/OperatorHud.h"
+#include "Base/Server/OperatorHud.h"
 
 #include "SpehsEngine/GUI/GuiView.h"
 #include "SpehsEngine/GUI/GUIShape.h"
 #include "SpehsEngine/GUI/GUIText.h"
-#include "Server/RadarGui.h"
-#include "Server/MutatorGui.h"
-#include "Server/MonitorGui.h"
+#include "Base/Server/RadarGui.h"
+#include "Base/Server/MutatorGui.h"
+#include "Base/Server/MonitorGui.h"
 #pragma optimize("", off)
 
 using namespace se::gui;

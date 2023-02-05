@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Client/RootsGame.h"
+#include "Base/Client/RootsGame.h"
 
 #include "SpehsEngine/Debug/ImGfx.h"
 #include "SpehsEngine/Graphics/Animator.h"
@@ -21,9 +21,9 @@
 #include "Base/ClientUtility/CameraController.h"
 #include "Base/ClientUtility/MaterialManager.h"
 #include "Base/ClientUtility/SoundPlayer.h"
-#include "Client/EvilRootManager.h"
-#include "Client/PlayerCharacter.h"
-#include "Client/BulletManager.h"
+#include "Base/Client/EvilRootManager.h"
+#include "Base/Client/PlayerCharacter.h"
+#include "Base/Client/BulletManager.h"
 
 using namespace se::graphics;
 

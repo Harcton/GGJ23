@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Base/DemoContext.h"
-#include "Server/Client.h"
+#include "Base/Server/Client.h"
 
 
 struct ServerContext : public DemoContext

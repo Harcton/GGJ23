@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Base/Server/IOperatorGui.h"
+
 class PlayerCharacterServer;
 class RootServer;
 

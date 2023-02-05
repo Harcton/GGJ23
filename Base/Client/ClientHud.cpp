@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Client/ClientHud.h"
+#include "Base/Client/ClientHud.h"
 
 #include "SpehsEngine/GUI/GuiView.h"
 #include "SpehsEngine/GUI/GUIShape.h"

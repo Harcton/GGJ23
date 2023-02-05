@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Server/PlayerCharacterServer.h"
+#include "Base/Server/PlayerCharacterServer.h"
 
 #include "Base/Net/Packets.h"
 #include "SpehsEngine/Net/ConnectionManager2.h"

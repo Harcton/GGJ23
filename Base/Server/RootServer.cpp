@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Server/RootServer.h"
+#include "Base/Server/RootServer.h"
 
 #include "SpehsEngine/Graphics/Animator.h"
 #include "SpehsEngine/Graphics/Model.h"
@@ -8,7 +8,7 @@
 #include "SpehsEngine/Graphics/Shape.h"
 #include "SpehsEngine/Graphics/TextureManager.h"
 #include "Base/ClientUtility/MaterialManager.h"
-#include "Client/BulletManager.h"
+#include "Base/Server/Client.h"
 #include "glm/gtx/rotate_vector.hpp"
 #pragma optimize("", off)
 using namespace se::graphics;

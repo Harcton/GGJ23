@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Client/LobbyClient.h"
+#include "Base/LobbyClient.h"
 
 #include "Base/Net/Packets.h"
 #include "SpehsEngine/Core/OS.h"

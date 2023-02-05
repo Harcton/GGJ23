@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Client/BulletManager.h"
+#include "Base/Client/BulletManager.h"
 
 #include "SpehsEngine/Graphics/Animator.h"
 #include "SpehsEngine/Graphics/Model.h"
@@ -140,4 +140,3 @@ std::optional<float> BulletManager::Impl::hitTest(const glm::vec3& _pos, float _
 	}
 	return std::nullopt;
 }
-

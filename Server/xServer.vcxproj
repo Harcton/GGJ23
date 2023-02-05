@@ -132,15 +132,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="MonitorGui.cpp" />
-    <ClCompile Include="MutatorGui.cpp" />
-    <ClCompile Include="OperatorHud.cpp" />
-    <ClCompile Include="PacketBroadcaster.cpp" />
-    <ClCompile Include="LobbyServer.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="PlayerCharacterServer.cpp" />
-    <ClCompile Include="RadarGui.cpp" />
-    <ClCompile Include="RootServer.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -149,17 +141,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="IOperatorGui.h" />
-    <ClInclude Include="MonitorGui.h" />
-    <ClInclude Include="MutatorGui.h" />
-    <ClInclude Include="OperatorHud.h" />
-    <ClInclude Include="PacketBroadcaster.h" />
-    <ClInclude Include="Client.h" />
-    <ClInclude Include="LobbyServer.h" />
-    <ClInclude Include="PlayerCharacterServer.h" />
-    <ClInclude Include="RadarGui.h" />
-    <ClInclude Include="RootServer.h" />
-    <ClInclude Include="ServerContext.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>

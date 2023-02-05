@@ -1,9 +1,9 @@
 #include "stdafx.h"
-#include "Server/MutatorGui.h"
+#include "Base/Server/MutatorGui.h"
 
 #include "Base/Net/Packets.h"
 #include "Base/MutationDatabase.h"
-#include "Server/PlayerCharacterServer.h"
+#include "Base/Server/PlayerCharacterServer.h"
 #include "SpehsEngine/GUI/GUIShape.h"
 #include "SpehsEngine/GUI/GUIView.h"
 #pragma optimize("", off)

@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Server/MonitorGui.h"
+#include "Base/Server/MonitorGui.h"
 
 #include "Base/Net/Packets.h"
 #include "SpehsEngine/GUI/GUIShape.h"

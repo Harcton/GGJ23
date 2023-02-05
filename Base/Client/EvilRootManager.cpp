@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Client/EvilRootManager.h"
+#include "Base/Client/EvilRootManager.h"
 
 #include "SpehsEngine/Graphics/Animator.h"
 #include "SpehsEngine/Graphics/Model.h"
@@ -11,7 +11,7 @@
 #include "Base/ClientUtility/MaterialManager.h"
 #include "Base/ClientUtility/SoundPlayer.h"
 #include "Base/Net/Packets.h"
-#include "Client/BulletManager.h"
+#include "Base/Client/BulletManager.h"
 
 using namespace se::graphics;
 #pragma optimize("", off)
