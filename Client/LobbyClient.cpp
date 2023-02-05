@@ -27,7 +27,8 @@ struct LobbyClient::Impl
 
 	void render()
 	{
-		if (ImGui::Begin("LobbyClient"))
+		const ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
+		if (ImGui::BeginCentered("LobbyClient", nullptr, windowFlags, ImGuiCond_Always))
 		{
 			if (connection)
 			{

@@ -126,7 +126,8 @@ struct LobbyServer::Impl
 
 	void render()
 	{
-		if (ImGui::Begin("Lobby"))
+		const ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
+		if (ImGui::BeginCentered("LobbyServer", nullptr, windowFlags, ImGuiCond_Always))
 		{
 			if (ImGui::InputT("Target client count", targetClientCount))
 			{
