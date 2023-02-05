@@ -45,6 +45,10 @@ struct LobbyClient::Impl
 					{
 						sendReady();
 					}
+					if (ready)
+					{
+						ImGui::Text("Wait for the operator to start the game");
+					}
 					break;
 				case se::net::Connection2::Status::Disconnected:
 					ImGui::Text("Disconnected");
