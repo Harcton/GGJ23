@@ -72,7 +72,7 @@ bool RootsGame::update()
 RootsGame::Impl::Impl(ClientContext& _context)
 	: context(_context)
 	, ambientLight(se::Color{}, 0.6f)
-	, sunLight(se::Color{}, 0.75f, glm::vec3{ 2.0f, 5.0f, 1.0f })
+	, sunLight(se::Color{}, 0.8f, glm::vec3{ 4.0f, 5.0f, 1.0f })
 	, bulletManager(_context, constants::worldSize)
 	, rootManager(_context, bulletManager, constants::worldSize)
 	, player(_context, bulletManager)
@@ -106,8 +106,8 @@ RootsGame::Impl::Impl(ClientContext& _context)
 
 	{
 		auto material = context.materialManager.createMaterial(DefaultMaterialType::Phong);
-		material->setTexture(context.textureManager.create("ground.png", "ground.png"), PhongTextureType::Color);
-		material->setTexture(context.textureManager.find("flat_normal"), PhongTextureType::Normal);
+		material->setTexture(context.textureManager.create("ground_green_dif.png", "ground_green_dif.png"), PhongTextureType::Color);
+		material->setTexture(context.textureManager.create("ground_normal.png", "ground_normal.png"), PhongTextureType::Normal);
 
 		ShapeParameters params = context.materialManager.getDefaultShapeParams();
 		params.resolution = 100;
@@ -115,6 +115,7 @@ RootsGame::Impl::Impl(ClientContext& _context)
 
 		ground.generate(ShapeType::Circle, params, &context.shapeGenerator);
 		ground.setMaterial(material);
+		ground.setColor(se::Color(0.6f, 0.6f, 0.6f));
 		ground.setScale(glm::vec3{ constants::worldSize, 1.0f, constants::worldSize });
 		context.scene.add(ground);
 	}
