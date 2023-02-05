@@ -20,9 +20,6 @@
     <ClCompile Include="LobbyClient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Playground.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="RootsGame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -42,9 +39,6 @@
     </ClInclude>
     <ClInclude Include="LobbyClient.h">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Playground.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RootsGame.h">
       <Filter>Header Files</Filter>
