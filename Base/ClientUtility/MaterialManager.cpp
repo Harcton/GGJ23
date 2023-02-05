@@ -21,7 +21,8 @@ void MaterialManager::init()
 {
 	//////////
 	// Load shaders
-	shaderManager.create("frog", "vs_frog", "fs_frog");
+	shaderManager.create("object",				"vs_object",			"fs_object");
+	shaderManager.create("object_skinned",		"vs_object_skinned",	"fs_object");
 
 	//////////
 	// Create some common textures
@@ -71,11 +72,11 @@ std::shared_ptr<Material> MaterialManager::createMaterial(MaterialType _type)
 {
 	switch (_type)
 	{
-		case MaterialType::DemoFrog:
+		case MaterialType::Object:
 			{
 				std::shared_ptr<Material> material = std::make_shared<Material>();
-				material->setShader(shaderManager.find("phong"), ShaderVariant::Default);
-				material->setShader(shaderManager.find("frog"), ShaderVariant::Skinned);
+				material->setShader(shaderManager.find("object"), ShaderVariant::Default);
+				material->setShader(shaderManager.find("object_skinned"), ShaderVariant::Skinned);
 				material->setTexture(nullptr, "s_texColor", PhongTextureType::Color);
 				material->setTexture(nullptr, "s_texNormal", PhongTextureType::Normal);
 				material->setTexture(nullptr, "s_texRoughness", PhongTextureType::Roughness);
@@ -92,9 +93,10 @@ std::shared_ptr<Material> MaterialManager::createMaterial(DefaultMaterialType _t
 }
 std::shared_ptr<se::graphics::Material> MaterialManager::getDefaultMaterial()
 {
-	auto mat = createMaterial(DefaultMaterialType::Phong);
+	auto mat = createMaterial(MaterialType::Object);
 	mat->setTexture(textureManager.find("white_color"), PhongTextureType::Color);
 	mat->setTexture(textureManager.find("flat_normal"), PhongTextureType::Normal);
+	mat->setTexture(textureManager.find("roughness_1"), PhongTextureType::Roughness);
 	return mat;
 }
 const se::graphics::ShapeParameters& MaterialManager::getDefaultShapeParams() const

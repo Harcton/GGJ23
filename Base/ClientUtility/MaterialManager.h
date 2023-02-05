@@ -16,7 +16,7 @@ struct DemoContext;
 
 enum class MaterialType
 {
-	DemoFrog,
+	Object,
 };
 
 class MaterialManager
